@@ -28,6 +28,19 @@ Adding to your desktop:
      ln -s /usr/share/applications/steamos-factory-reset.*.desktop .
    ```
 
+### Skipping the actual OS reset step
+
+The actual fetch-and-install of an OS image can be slow, so if you're
+not interested in that you can tell the backend to skip that stage with:
+
+   ```
+   sudo touch /run/.skip-os-reset
+   ```
+
+It will still spend a few seconds emitting some dummy progress messages
+and will set the next boot to the other slot, as if a real update had
+happened, but no new OS image will be fetched or installed.
+
 ## Contents
 
 This repo contains:

@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# SPDX-License-Identifier: GPL-2.0+
+
+# Copyright © 2022 Collabora Ltd
+# Copyright © 2022 Valve Corporation
+
+uibin=
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+declare -r RUNTMP=/run/user/$UID/steamos-reset
+declare -r PIDFILE=$RUNTMP/$$.pid
+
+choose_ui ()
+{
+    local ui
+    local bin
+
+    while [ $# -gt 0 ]
+    do
+        case ${1:-} in
+            --ui)
+                ui=${2:-}
+                shift
+                ;;
+            --ui=*)
+                ui=${1#--ui=}
+                ;;
+        esac
+        shift
+    done
+
+    bin="@PKGLIBDIR@/bin/steamos-reset-${ui:-qml}"
+
+    if [ -x $bin ]
+    then
+        uibin="$bin"
+        return 0
+    fi
+
+    echo "No executable '$bin' found for --ui $ui" >&2
+    exit 1
+}
+
+reset_ui_running ()
+{
+    local pidfile
+
+    for pidfile in $RUNTMP/*.pid
+    do
+        [ -f $pidfile ] && return 0
+    done
+
+    return 1
+}
+
+choose_ui "$@"
+
+/sbin/steamos-reset-service on
+mkdir -p "$RUNTMP" && touch "$PIDFILE"
+"$uibin"
+rm -vf "$PIDFILE"
+
+if ! reset_ui_running
+then
+    /sbin/steamos-reset-service off
+fi

@@ -1,0 +1,25 @@
+server.port		= @SRVPORT@
+server.bind             = "@SRVADDR@"
+server.username		= "@SRVUSER@"
+server.groupname	= "@SRVGROUP@"
+server.document-root	= "/usr/share/@PACKAGE_NAME@"
+server.errorlog		= "/var/log/lighttpd/error.log"
+dir-listing.activate	= "enable"
+index-file.names	= ( "index.html" )
+mimetype.assign		= (
+                                ".html" => "text/html",
+                                ".txt" => "text/plain",
+                                ".css" => "text/css",
+                                ".js" => "application/x-javascript",
+                                ".jpg" => "image/jpeg",
+                                ".jpeg" => "image/jpeg",
+                                ".gif" => "image/gif",
+                                ".png" => "image/png",
+                                "" => "application/octet-stream"
+			)
+
+server.modules         += ( "mod_cgi" )
+cgi.execute-x-only      = "enable"
+$HTTP["url"] =~ "/cgi/" {
+      cgi.assign = ("" => "")
+}

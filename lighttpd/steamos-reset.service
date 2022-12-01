@@ -1,0 +1,10 @@
+[Unit]
+Description=SteamOS Factory Reset Web Service
+After=syslog.target network.target
+
+[Service]
+PrivateTmp=true
+ExecStart=/usr/bin/lighttpd-angel -D -f /etc/lighttpd/steamos-reset.conf
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGINT
+

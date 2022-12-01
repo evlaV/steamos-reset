@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!--
+
+// SPDX-License-Identifier: GPL-2.0+
+
+// Copyright © 2022 Collabora Ltd
+// Copyright © 2022 Valve Corporation
+
+-->
+
+<html>
+  <head>
+    <title> SteamOS Factory Reset </title>
+    <link rel="stylesheet" href="style.css"/>
+    <script type="module">
+      import { check_status, prepare_reset, undo_reset } from "./main.js";
+      window.check_status  = check_status;
+      window.prepare_reset = prepare_reset;
+      window.undo_reset    = undo_reset;
+    </script>
+  </head>
+
+  <body>
+    <div id="heading"><h1>SteamOS Factory Reset Tool</h1></div>
+    <div id="ui">
+      <div id="intro" class="uiblock">
+        <p> This tool will: </p>
+        <ul>
+          <li>Check that your OS image is unmodified</li>
+          <ul><li>Download and install a fresh OS image if it is not</li></ul>
+          <li>Set up your Deck to reboot and erase all user data on the next boot</li>
+        </ul>
+        <p> It will <em>not</em> reboot automatically </p>
+        <p> You <em>will</em> have a chance to change your mind before proceeding </p>
+        <input type="button" class="control" id="start-button"
+               value="Check Status" alt="Check Status" onclick="check_status(this);"/>
+      </div>
+      <div class="operation uiblock" id="checking">
+        <p>Checking OS image integrity</p>
+      </div>
+      <div class="operation uiblock" id="prepare">
+        <p id="freshen">Install a fresh OS image</p>
+        <p>Prepare to erase user data on reboot</p>
+        <input type="button" class="control" id="reimage-button"
+               value="Prepare to Reset" alt="Prepare to Reset" onclick="prepare_reset(this);"/>
+      </div>
+      <div class="operation uiblock" id="preparing">
+        <p>Preparing for factory reset</p>
+      </div>
+      <div class="operation uiblock" id="finished">
+        <p>Your deck is ready to factory-reset next time you reboot it.</p>
+        <input type="button" class="control" id="undo-reset-button"
+               value="Wait, what? No! UNDO!"
+               alt="Wait, what? No! UNDO!" onclick="undo_reset(this);"/>
+      </div>
+      <div class="operation uiblock" id="undoing">
+        <p>Removing reset configuration</p>
+      </div>
+      <div id="status-log" class="logs"></div>
+      <div class="debug">
+        <textarea id="debug-log" cols="160" rows="10"></textarea>
+      </div>
+    </div>
+</body>
+</html>
+

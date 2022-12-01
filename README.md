@@ -8,9 +8,17 @@ Building and installing:
 
     ```
     autoreconf -ivf # needed first time only
-    ./configure --prefix=/usr --libexecdir=/usr/share
+    ./configure --prefix=/usr --libexecdir=/usr/lib
     make
     sudo make install
+    ```
+By default the qml UI is built. You can choose either or both UIs:
+
+    ```
+    ./configure --prefix=/usr --libexecdir=/usr/lib --with-ui=cef
+    ```
+    ```
+    ./configure --prefix=/usr --libexecdir=/usr/lib --with-ui=all
     ```
 
 Adding to your desktop:
@@ -19,7 +27,6 @@ Adding to your desktop:
    cd ~/Desktop && \
      ln -s /usr/share/applications/steamos-factory-reset.*.desktop .
    ```
-
 
 ## Contents
 
@@ -87,7 +94,7 @@ This has the added advantage that you can run the commands from the source
 tree:
 
     autoreconf -ivf # needed first time only
-    ./configure --prefix=/usr --libexecdir=/usr/share
+    ./configure --prefix=/usr --libexecdir=/usr/lib
     make
 
     sudo ./os-status

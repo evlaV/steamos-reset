@@ -64,6 +64,31 @@ atomic_update ()
     fi
 }
 
+generate_factory_reset_config ()
+{
+    local rv=0
+    local cfg
+
+    (cd $FACTORY_RESET_CONFIG_DIR && rm -vf * >&2)
+
+    # suppress some annoying and unimportant warnings:
+    if ! steamos-factory-reset-config 2>&1
+    then
+         rv=1
+    fi | (grep -vF 'mv: failed to preserve ownership'||true)
+
+    cd $FACTORY_RESET_CONFIG_DIR
+    while read cfg
+    do
+        case $cfg in
+            efi-*) rm "$cfg"; ;;
+            *) log_msg "Configuration for $cfg generated"; ;;
+        esac
+    done < <(ls -1)
+
+    return $rv
+}
+
 update_from_url ()
 {
     local -r tmpd=$(mktemp -d)
@@ -154,28 +179,13 @@ reset_os ()
     fi
 
     log_msg "Generating filesystem cleanup config in $FACTORY_RESET_CONFIG_DIR"
-    (cd $FACTORY_RESET_CONFIG_DIR && rm -vf * >&2)
-    if ! steamos-factory-reset-config 
+    if ! generate_factory_reset_config
     then
         log_msg "Failed to generate reset config"
         steamos-bootconf set-mode reboot
         set_session_status 500
         return 0
     fi
-
-    # We used to reset the efi partitions during initrd processing,
-    # but now that our first step is a standard image atomic update
-    # this is neither necessary nor desirable:
-    # This will be removed from steamos-factory-reset-config in a
-    # separate MR, but we can protect ourselves from old copies here:
-    cd $FACTORY_RESET_CONFIG_DIR
-    while read cfg
-    do
-        case $cfg in
-            efi-*) rm "$cfg"; ;;
-            *) log_msg "Configuration for $cfg generated"; ;;
-        esac
-    done < <(ls -1)
 
     log_msg "Factory reset ready"
     set_session_status 200

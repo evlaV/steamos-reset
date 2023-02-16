@@ -18,6 +18,8 @@
 #include <unistd.h>
 #include <errno.h>
 
+static int cgi_mode;
+
 bool needs_privilege ()
 {
     return
@@ -101,12 +103,18 @@ void sanitise(char *raw)
         *(c - 1) = '\0';
 }
 
+void emit_header ()
+{
+    if( cgi_mode > 0 )
+        printf( "Content-Type: application/json\r\n\r\n" );
+}
+
 void emit_error (uint status, char *path, char *message)
 {
     sanitise( path );
     sanitise( message );
 
-    printf( "Content-Type: application/json\r\n\r\n" );
+    emit_header();
     printf(
 "{\"service\":\"%s\",\n\
 \"version\":\"%s\",\n\
@@ -120,7 +128,7 @@ void emit_error (uint status, char *path, char *message)
 
 void emit_null_response (void)
 {
-    printf( "Content-Type: application/json\r\n\r\n" );
+    emit_header();
     printf("{"
            "\"service\":\"%s\",\n"
            "\"version\":\"%s\",\n"
@@ -141,48 +149,80 @@ void emit_null_response (void)
            program_invocation_short_name );
 }
 
-char ** make_argv_from_query (char *query)
+// If we have a QUERY_STRING, even an empty one, then process it as
+// if we're in HTTP-CGI mode. Otherwise sanitise the command line args:
+char ** make_argv (int proc_argc, char **proc_argv)
 {
-    char *c;
     int args = 1;
     char **argv = NULL;
     char char_ok[128] = { 0 };
+    char *query_string = NULL;
 
     char_ok['.'] = 1;
     char_ok['='] = 1;
     char_ok['-'] = 1;
 
-    if( !query )
-        query = getenv( "QUERY_STRING" );
+    query_string = getenv( "QUERY_STRING" );
 
-    if( query && *query )
-        args++;
+    if( query_string )
+    {
+        char *c;
 
-    for( c = query; c && *c; c++ )
-        if( *c == '&' || *c == ';' )
+        cgi_mode = 1;
+
+        if( *query_string )
             args++;
 
-    argv = calloc( args + 1, sizeof(char *) );
+        for( c = query_string; c && *c; c++ )
+            if( *c == '&' || *c == ';' )
+                args++;
 
-    argv[0] = program_invocation_short_name;
+        argv = calloc( args + 1, sizeof(char *) );
 
-    if( args >= 2 )
-        argv[1] = query;
+        argv[0] = program_invocation_short_name;
 
-    int j = 2;
+        if( args >= 2 )
+            argv[1] = query_string;
 
-    for( c = query; c && *c && (j < args); c++ )
-    {
-        if( *c == '&' || *c == ';' )
+        int j = 2;
+
+        for( c = query_string; c && *c && (j < args); c++ )
         {
-            *c = '\0';
-            argv[ j++ ] = (c + 1);
+            if( *c == '&' || *c == ';' )
+            {
+                *c = '\0';
+                argv[ j++ ] = (c + 1);
+            }
+            // must be printable and [ alphanumeric . = - ]
+            else if( !isprint(*c) ||
+                     (!isalnum(*c) && !char_ok[(uint)*c]) )
+            {
+                *c = '.';
+            }
         }
-        // must be printable and [ alphanumeric . = - ]
-        else if( !isprint(*c) ||
-                 (!isalnum(*c) && !char_ok[(uint)*c]) )
+    }
+    else
+    {
+        cgi_mode = 0;
+        args = proc_argc;
+        argv = calloc( args + 1, sizeof(char *) );
+        argv[0] = program_invocation_short_name;
+
+        for( int j = 1; j < proc_argc; j++ )
         {
-            *c = '.';
+            int len = strlen( proc_argv[ j ] );
+
+            argv[ j ] = calloc( len + 1, 1 );
+
+            for( int c = 0; c < len; c++ )
+            {
+                if( !isprint( proc_argv[ j ][ c ] ) ||
+                    (!isalnum( proc_argv[ j ][ c ]) &&
+                     !char_ok[(uint)proc_argv[ j ][ c ]] ) )
+                    argv[ j ][ c ] = '.';
+                else
+                    argv[ j ][ c ] = proc_argv[ j ][ c ];
+            }
         }
     }
 
@@ -191,10 +231,9 @@ char ** make_argv_from_query (char *query)
     return argv;
 }
 
-int wrap_script (char *path)
+int wrap_script (char *path, int proc_argc, char **proc_argv)
 {
-    char **argv = make_argv_from_query( NULL );
-
+    char **argv = make_argv( proc_argc, proc_argv );
     int rc = execv( path, argv );
 
     free( argv );
@@ -233,7 +272,7 @@ int main (int argc, char **argv)
         }
     }
 
-    int rc = wrap_script( &wrapped_script[0] );
+    int rc = wrap_script( &wrapped_script[0], argc, argv );
     char *wrap_error = strdup( strerror( rc ) );
 
     emit_error( 502, &wrapped_script[0], wrap_error );

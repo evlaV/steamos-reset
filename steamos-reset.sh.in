@@ -372,7 +372,11 @@ clear_session ()
 
 emit_json_header ()
 {
-    echo -ne "Content-Type: application/json\r\n\r\n"
+    # empty query or one with content => we're in CGI mode
+    if [ -n "${QUERY_STRING:-}" ] || [ -n "${QUERY_STRING+x}" ]
+    then
+        echo -ne "Content-Type: application/json\r\n\r\n"
+    fi
 }
 
 close_stdio ()

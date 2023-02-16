@@ -17,6 +17,7 @@ BACKENDS   := debug status os-status boot-status factory-reset undo-reset clear
 SH_LIBS    := steamos-reset.sh
 WRAPPER    := steamos-reset-wrapper
 SRVCTL     := steamos-reset-service
+CLI        := steamos-reset-tool
 LIGHTTPD   := lighttpd/steamos-reset.conf
 SERVICE    := lighttpd/steamos-reset.service
 LIGHTTPCFG := $(LIGHTTPDIR)/$(notdir $(LIGHTTPD))
@@ -77,6 +78,7 @@ install-exec-hook: all
 	install -s -m 4755 -t $(DESTDIR)$(CGI_BINDIR) $(WRAPPER)
 	install -d $(DESTDIR)$(sbindir)
 	install -s -m 4755 -t $(DESTDIR)$(sbindir) $(SRVCTL)
+	install -m 0755 -t $(DESTDIR)$(sbindir) $(CLI)
 	(cd $(DESTDIR)$(CGI_BINDIR); for s in $(BACKENDS); \
 	 do ln -f $(WRAPPER) $$s; done)
 
@@ -88,6 +90,7 @@ uninstall-hook:
 	 do rm -vf $(DESTDIR)$(PKGDATADIR)/applications/$$d; done)
 	rm -vf $(DESTDIR)$(PKGSHAREDIR)/steamos-reset.svg
 	rm -vf $(DESTDIR)$(sbindir)/$(notdir $(SRVCTL))
+	rm -vf $(DESTDIR)$(sbindir)/$(notdir $(CLI))
 	(for s in $(BACKENDS); do rm -vf $(DESTDIR)$(CGI_BINDIR)/$$s; done)
 
 clean-local:

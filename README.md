@@ -41,6 +41,129 @@ It will still spend a few seconds emitting some dummy progress messages
 and will set the next boot to the other slot, as if a real update had
 happened, but no new OS image will be fetched or installed.
 
+### Runnning the CLI tool:
+
+The CLI tool emits log lines to standard error and a JSON result
+on stdout on completion of the requested operation.
+
+  ```
+  steamos-reset-tool boot-status
+  ```
+
+  ```
+  {
+    "service": "boot-status",
+    "version": "0.02",
+    "status": 200,
+    "message": "Boot Status",
+    "boot": {
+      "current": "A",
+      "next": "A",
+      "reset-list": []
+    }
+  }
+
+  ```
+The boot-status command shows you the current boot configuration and which,
+if any, filesystem resets are scheduled for the next boot.
+
+  ```
+  steamos-reset-tool os-status
+  ```
+
+  ```
+  {
+    "service": "os-status",
+    "version": "0.02",
+    "status": 200,
+    "message": "OS Status Check Complete",
+    "uuid": "7141edd8-59ee-482a-99a6-0c6093b31fdc",
+    "update": {
+      "needed": 1,
+      "url": "https://steamdeck-images.…/…/steamdeck-20221221.2-snapshot.raucb"
+    }
+  }
+  ```
+
+The os-status command fetches a reset OS image candidate URL and caches it.
+It also determines whether an OS reset is needed based on the RAUC caibx file
+in the current image (if there is one).
+
+Subsequent invocations will not re-fetch the metadata and choose a new candidate
+until a reboot happens or the ```cleanup``` command is run.
+
+  ```
+  steamos-reset-tool factory-reset
+  ```
+
+  ```
+  {
+    "service": "boot-status",
+    "version": "0.02",
+    "status": 200,
+    "message": "Boot Status",
+    "boot": {
+      "current": "A",
+      "next": "B",
+      "reset-list": [
+        {
+          "device": "/dev/nvme0n1p8",
+          "label": "User-data (shared)"
+        },
+        {
+          "device": "/dev/nvme0n1p6",
+          "label": "OS-data (A)"
+        },
+        {
+          "device": "/dev/nvme0n1p7",
+          "label": "OS-data (B)"
+        }
+      ]
+    }
+  }
+  ```
+
+The factory-reset command fetches the cached OS image URL and installs it
+into the slot that's not currently booted. It then shows you the boot-status.
+
+  ```
+  steamos-reset-tool undo-reset
+  ```
+
+  ```
+  {
+    "service": "undo-reset",
+    "uuid": "b4932abf-8532-4a21-9d6f-b58f20acfac8",
+    "status": 200,
+    "message": "Removing factory-reset configuration"
+  }
+  ```
+
+The undo-reset command removes any scheduled filesystem reset operations.
+
+In addition the following commands are also available, but not needed in normal
+reset workflow:
+
+  ```
+  steamos-reset-tool status
+  steamos-reset-tool status uuid=deadbeef-abad-1dea-1337-d155a715f1ed
+  ```
+
+Show the status of all sessions, or just of the specified session
+
+  ```
+  steamos-reset-tool cleanup
+  ```
+
+Remove all completed sessions (status 200 or no longer have a running process)
+
+  ```
+  steamos-reset-tool debug
+  ```
+
+Dump some plaintext debug info about the environment in which the reset backends
+run. This is the only non-JSON producing command.
+
 ## Contents
 
 This repo contains:

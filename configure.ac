@@ -55,6 +55,6 @@ AC_SUBST([PKGDATADIR],[$datarootdir])
 AC_SUBST([LIBEXECDIR],[$libexecdir])
 AC_SUBST([PKGLIBDIR],[$libdir/$PACKAGE])
 
-AC_CONFIG_FILES([Makefile steamos-reset.sh steamos-reset
+AC_CONFIG_FILES([Makefile steamos-reset.sh steamos-reset steamos-reset-tool
                  lighttpd/steamos-reset.conf])
 AC_OUTPUT

@@ -69,6 +69,7 @@ install-data-hook: all
 	install -m 0644 -T $(LIGHTTPD) $(DESTDIR)$(LIGHTTPCFG)
 	install -d $(DESTDIR)$(UNITDIR)
 	install -m 0644 -T $(SERVICE) $(DESTDIR)$(UNITDIR)/$(notdir $(SERVICE))
+	install -d $(DESTDIR)$(PKGSHAREDIR)
 	install -m 0644 -t $(DESTDIR)$(PKGSHAREDIR) data/steamos-reset.svg
 	install -d $(DESTDIR)$(PKGDATADIR)/applications
 	install -m 0644 -t $(DESTDIR)$(PKGDATADIR)/applications $(DESKTOPS)

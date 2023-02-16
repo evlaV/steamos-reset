@@ -8,17 +8,19 @@ Building and installing:
 
     ```
     autoreconf -ivf # needed first time only
-    ./configure --prefix=/usr --libexecdir=/usr/lib
+    ./configure --prefix=/usr --libexecdir=/usr/lib --sbindir=/usr/bin
     make
     sudo make install
     ```
 By default the qml UI is built. You can choose either or both UIs:
 
     ```
-    ./configure --prefix=/usr --libexecdir=/usr/lib --with-ui=cef
+    ./configure --prefix=/usr --libexecdir=/usr/lib --sbindir=/usr/bin \
+        --with-ui=cef
     ```
     ```
-    ./configure --prefix=/usr --libexecdir=/usr/lib --with-ui=all
+    ./configure --prefix=/usr --libexecdir=/usr/lib --sbindir=/usr/bin \
+        --with-ui=all
     ```
 
 Adding to your desktop:

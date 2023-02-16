@@ -10,8 +10,6 @@ set -eu
 . ${LIBDIR:-.}/steamos-reset.sh
 set +e
 
-declare -r FACTORY_RESET_CONFIG_DIR=/esp/efi/steamos/factory-reset
-
 unreset_os ()
 {
     log_msg "Restoring boot to current image"

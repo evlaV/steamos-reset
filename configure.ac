@@ -41,9 +41,9 @@ AC_ARG_WITH([service-group],
 AC_SUBST([SRVGROUP])
 
 AC_ARG_WITH([ui],
-            [AS_HELP_STRING([--with-ui=<all,qml,cef>],[UI to build [qml]])],
+            [AS_HELP_STRING([--with-ui=<all,qml,cef,cli>],[UI to build [cli]])],
             [UI="$with_ui"],
-            [UI="qml"])
+            [UI="cli"])
 AC_SUBST([UI])
 
 AC_PROG_INSTALL

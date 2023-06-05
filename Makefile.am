@@ -33,7 +33,7 @@ CLEANFILES  = $(BUILT)
 
 noinst_PROGRAMS    = $(WRAPPER) $(SRVCTL)
 pkglibexec_SCRIPTS = $(BACKENDS) $(SH_LIBS)
-bin_SCRIPTS = steamos-reset
+bin_SCRIPTS = $(ifneq ,$(DESKTOPS),steamos-reset)
 
  ifneq (,$(filter qml all,$(UI)))
  include qml.mk
@@ -72,7 +72,9 @@ install-data-hook: all
 	install -d $(DESTDIR)$(PKGSHAREDIR)
 	install -m 0644 -t $(DESTDIR)$(PKGSHAREDIR) data/steamos-reset.svg
 	install -d $(DESTDIR)$(PKGDATADIR)/applications
-	install -m 0644 -t $(DESTDIR)$(PKGDATADIR)/applications $(DESKTOPS)
+	if [ -n "$(DESKTOPS)" ]; then \
+	  install -m 0644 -t $(DESTDIR)$(PKGDATADIR)/applications $(DESKTOPS); \
+	fi
 
 install-exec-hook: all
 	install -d $(DESTDIR)$(CGI_BINDIR)

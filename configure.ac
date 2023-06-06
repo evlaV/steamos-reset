@@ -10,8 +10,6 @@ AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([-Wno-portability foreign subdir-objects])
 AM_SILENT_RULES([yes])
 
-PKG_CHECK_MODULES([X11],[x11])
-
 AC_ARG_WITH([service-port],
             [AS_HELP_STRING([--with-service-port=PORT],
                             [the TCP port to listen on [8080]])],
@@ -45,6 +43,11 @@ AC_ARG_WITH([ui],
             [UI="$with_ui"],
             [UI="cli"])
 AC_SUBST([UI])
+
+dnl Only need X11 if we're building CEF or QML front ends
+AS_CASE([$UI],
+        [cli],[true],
+        [PKG_CHECK_MODULES([X11],[x11])])
 
 AC_PROG_INSTALL
 AC_PROG_CC

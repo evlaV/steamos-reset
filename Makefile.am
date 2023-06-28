@@ -10,7 +10,7 @@ CGI_BINDIR := $(PKGSHAREDIR)/cgi
 # systemd service file location
 UNITDIR    := $(libdir)/systemd/system
 # lighttpd config
-LIGHTTPDIR := /etc/lighttpd
+LIGHTTPDIR := $(PKGSHAREDIR)/lighttpd
 
 VARIANTS   := 
 BACKENDS   := debug status os-status boot-status factory-reset undo-reset clear

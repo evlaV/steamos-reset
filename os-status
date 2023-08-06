@@ -32,6 +32,17 @@ declare -r LIST_IMAGES=$(cat - <<EOF
 EOF
 );
 
+declare FIND_MANIFEST=$(cat - <<EOF
+<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:output omit-xml-declaration="yes" indent="yes" encoding="utf-8"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="//table[@id='list']/tbody/tr/td[@class='link']/a[contains(@title,'manifest.json')]">
+    <xsl:value-of select="@title"/><xsl:text>&#10;</xsl:text>
+  </xsl:template>
+  <xsl:template match="text()"/>
+</xsl:stylesheet>
+EOF
+);
 
 # If RAUC_ROOTFS_INDEX is present we can check if the rootfs is vanilla:
 os_is_unmodified ()
@@ -193,6 +204,19 @@ check_stable_update ()
     esac
 }
 
+get_manifest_filename ()
+{
+    local manifest=
+    local -r url_dir=${1}
+
+    while read manifest
+    do
+        [ -n "$manifest" ] && break
+    done < <(xsltproc --html <(echo "$FIND_MANIFEST") <(curl -s "$url_dir"))
+
+    echo "$manifest"
+}
+
 find_reset_image ()
 {
     read_current_manifest
@@ -220,10 +244,13 @@ find_reset_image ()
     do
         case $id in
             (+([0-9]).+([0-9]))
-              stub="$base/$id/${SELF[variant]}-$id-${SELF[version]}"
-              manifest="${stub}.manifest.json"
+              # the metadata stub is no longer fixed "VARIANT-ID-snapshot"
+              # so we have to go look and see what it is:
+              stub="$base/$id/"
+              manifest=$(get_manifest_filename "$stub")
+              stub="$base/$id/${manifest%.manifest.json}"
 
-              if read_atomupd_manifest <(curl -s "$manifest")
+              if read_atomupd_manifest <(curl -s "$base/$id/$manifest")
               then
                   log_msg "$id is a ${IMAGE[variant]} image"
                   # only consider stable images

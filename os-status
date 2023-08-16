@@ -168,7 +168,7 @@ network_ok ()
         fi
     done
 
-    url="${ATOMUPD_IMAGE_URL:-}${SELF[variant]}"/
+    url="${ATOMUPD_IMAGE_URL:-}steamdeck/"
 
     if curl -s -I "$url"
     then
@@ -224,7 +224,7 @@ find_reset_image ()
 {
     read_current_manifest
 
-    local -r base="${ATOMUPD_IMAGE_URL}${SELF[variant]}"
+    local -r base="${ATOMUPD_IMAGE_URL}steamdeck"
     local id stub manifest self_sig image_sig x
 
     if selected=$(check_stable_update)

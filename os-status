@@ -2,8 +2,8 @@
 
 # SPDX-License-Identifier: GPL-2.0+
 
-# Copyright © 2022 Collabora Ltd
-# Copyright © 2022 Valve Corporation
+# Copyright © 2023 Collabora Ltd
+# Copyright © 2023 Valve Corporation
 
 LIBDIR=$(dirname "$0")
 
@@ -105,9 +105,9 @@ read_atomupd_config ()
 
 read_atomupd_manifest ()
 {
-    local PRODUCT RELEASE VARIANT ARCH VER BUILD
-    local -r JQ='"\(.product) \(.release) \(.variant) \(.arch) \(.version) \(.buildid)"'
-    read PRODUCT RELEASE VARIANT ARCH VER BUILD < <(jq -r "$JQ" "$1");
+    local PRODUCT RELEASE VARIANT ARCH VER BUILD SKIP
+    local -r JQ='"\(.product) \(.release) \(.variant) \(.arch) \(.version) \(.buildid) \(.skip? // false)"'
+    read PRODUCT RELEASE VARIANT ARCH VER BUILD SKIP < <(jq -r "$JQ" "$1");
 
     IMAGE[product]=${PRODUCT:-steamos}
     IMAGE[release]=${RELEASE:-holo}
@@ -115,6 +115,7 @@ read_atomupd_manifest ()
     IMAGE[arch]=${ARCH:-amd64}
     IMAGE[version]=${VER:-snapshot}
     IMAGE[build]=${BUILD:-19000101.1}
+    IMAGE[skip]=${SKIP:-false}
 }
 
 read_current_manifest ()
@@ -126,6 +127,8 @@ read_current_manifest ()
     SELF[arch]=${IMAGE[arch]}
     SELF[version]=${IMAGE[version]}
     SELF[build]=${IMAGE[build]}
+    # it doesn't matter if the current image is a 'skip' image
+    # the OS reset will fix that anyway
 }
 
 resolve_fqdn ()
@@ -253,6 +256,14 @@ find_reset_image ()
               if read_atomupd_manifest <(curl -s "$base/$id/$manifest")
               then
                   log_msg "$id is a ${IMAGE[variant]} image"
+
+                  # ignore 'skip' images
+                  if [ "${IMAGE[skip]:-false}" != false ];
+                  then
+                      log_msg "$id is marked 'skip: ${IMAGE[skip]:-}'"
+                      continue;
+                  fi;
+
                   # only consider stable images
                   if [ "${IMAGE[variant]}" != steamdeck ]; then continue; fi
 

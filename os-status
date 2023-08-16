@@ -290,8 +290,18 @@ find_reset_image ()
     log_msg "Current image ${SELF[build]} (${SELF[variant]})"
     log_msg "Selecting ${IMAGE[build]} (${IMAGE[variant]})"
 
-    save_data update-target txt "$selected"
-    set_session_status 200
+    # sanity check: if there was a problem that meant we found no images
+    # other than this one, do _NOT_ try to update to it:
+    if [ "${SELF[build]}" != "${IMAGE[build]}" ]
+    then
+        save_data update-target txt "$selected"
+        set_session_status 200
+    else
+        # maybe we should alter this so the user data scrub happens anyway?
+        save_data update-needed txt 0
+        save_data update-target txt ""
+        set_session_status 200
+    fi
 }
 
 check_os_status ()

@@ -14,35 +14,12 @@ set +e
 
 declare -r RAUC_ROOTFS_INDEX=/var/lib/steamos-atomupd/rootfs.caibx
 declare -r PARTSET_LINKDIR=/dev/disk/by-partsets
-declare ATOMUPD_QUERY_URL
+declare ATOMUPD_META_URL
 declare ATOMUPD_IMAGE_URL
 declare -r ATOMUPD_CONFIG=${1:-/etc/steamos-atomupd/client.conf}
 declare -r ATOMUPD_MANIFEST=${2:-/etc/steamos-atomupd/manifest.json}
 declare -A SELF
 declare -A IMAGE
-declare -r LIST_IMAGES=$(cat - <<EOF
-<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
-  <xsl:output omit-xml-declaration="yes" indent="yes" encoding="utf-8"/>
-  <xsl:strip-space elements="*"/>
-  <xsl:template match="//table[@id='list']/tbody/tr/td[@class='link']/a">
-    <xsl:value-of select="@title"/><xsl:text>&#10;</xsl:text>
-  </xsl:template>
-  <xsl:template match="text()"/>
-</xsl:stylesheet>
-EOF
-);
-
-declare FIND_MANIFEST=$(cat - <<EOF
-<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
-  <xsl:output omit-xml-declaration="yes" indent="yes" encoding="utf-8"/>
-  <xsl:strip-space elements="*"/>
-  <xsl:template match="//table[@id='list']/tbody/tr/td[@class='link']/a[contains(@title,'manifest.json')]">
-    <xsl:value-of select="@title"/><xsl:text>&#10;</xsl:text>
-  </xsl:template>
-  <xsl:template match="text()"/>
-</xsl:stylesheet>
-EOF
-);
 
 # If RAUC_ROOTFS_INDEX is present we can check if the rootfs is vanilla:
 os_is_unmodified ()
@@ -89,7 +66,7 @@ read_atomupd_config ()
                 if [ ${section:-none} = Server ];
                 then
                     case $key in
-                        QueryUrl) ATOMUPD_QUERY_URL="${val:-}"; ;;
+                        MetaUrl) ATOMUPD_META_URL="${val:-}"; ;;
                         ImagesUrl) ATOMUPD_IMAGE_URL="${val:-}"; ;;
                     esac
                 fi
@@ -98,9 +75,9 @@ read_atomupd_config ()
     done < /etc/steamos-atomupd/client.conf
 
     log_msg "read /etc/steamos-atomupd/client.conf: "
-    log_msg "${ATOMUPD_IMAGE_URL:-} ${ATOMUPD_QUERY_URL:-}"
+    log_msg "${ATOMUPD_IMAGE_URL:-} ${ATOMUPD_META_URL:-}"
 
-    [ -n ${ATOMUPD_IMAGE_URL:-} ] && [ -n ${ATOMUPD_QUERY_URL:-} ]
+    [ -n ${ATOMUPD_IMAGE_URL:-} ] && [ -n ${ATOMUPD_META_URL:-} ]
 }
 
 read_atomupd_manifest ()
@@ -155,7 +132,7 @@ network_ok ()
 {
     local fqdn url
 
-    for url in ${ATOMUPD_IMAGE_URL:-unknown} ${ATOMUPD_QUERY_URL:-unknown}
+    for url in ${ATOMUPD_IMAGE_URL:-unknown} ${ATOMUPD_META_URL:-unknown}
     do
         fqdn=${url#*//}
         fqdn=${fqdn%/*}
@@ -176,61 +153,72 @@ network_ok ()
     return 1
 }
 
-check_stable_update ()
+parse_atomupd_response ()
 {
-    local variant path
     local -r JQ_VAR='\(.minor.candidates[0].image.variant)'
     local -r JQ_PATH='\(.minor.candidates[0].update_path)'
+
+    jq -r  "\"$JQ_VAR $JQ_PATH\"" -
+}
+
+get_default_reset_image ()
+{
+    local variant path
 
     log_msg "Calling steamos-atomupd-client to obtain update candidate"
 
     read variant path < \
-         <(jq -r  "\"$JQ_VAR $JQ_PATH\"" <(steamos-atomupd-client --query-only))
+         <(steamos-atomupd-client --query-only | parse_atomupd_response)
 
     if [ "${variant:-null}" = null ]
     then
         log_msg "No pending updates found"
+        return 1
     else
         log_msg "Update is ${ATOMUPD_IMAGE_URL:-}${path:-} (${variant:-})"
     fi
 
-    case ${variant:-none} in
-        steamdeck)
-            echo ${ATOMUPD_IMAGE_URL}${path:-}
-            ;;
-        *)
-            return 1
-            ;;
-    esac
+    echo ${ATOMUPD_IMAGE_URL}${path:-}
 }
 
-get_manifest_filename ()
+get_alternate_reset_image ()
 {
-    local manifest=
-    local -r url_dir=${1}
+    local variant path
 
-    while read manifest
-    do
-        [ -n "$manifest" ] && break
-    done < <(xsltproc --html <(echo "$FIND_MANIFEST") <(curl -s "$url_dir"))
+    # There should be some static metadata at:
+    # META_URL/<product>/<arch>/<version>/<variant>.second_last.json
+    local -r mspec=${SELF[product]}/${SELF[arch]}/${SELF[version]}/${SELF[variant]}
+    local -r meta=${ATOMUPD_META_URL}/${mspec}.second_last.json
 
-    echo "$manifest"
+    log_msg "Checking for alternate reset image at $meta"
+    read variant path < <(curl -s "$meta" | parse_atomupd_response)
+
+    if [ "${variant:-null}" = null ]
+    then
+        log_msg "No alternate reset image found"
+        return 1
+    else
+        log_msg "Reset is ${ATOMUPD_IMAGE_URL:-}${path:-} (${variant:-})"
+    fi
+
+    echo ${ATOMUPD_IMAGE_URL}${path:-}
 }
 
 find_reset_image ()
 {
     read_current_manifest
 
-    local -r base="${ATOMUPD_IMAGE_URL}${SELF[variant]}"
-    local id stub manifest self_sig image_sig x
-
-    if selected=$(check_stable_update)
+    # If we get an image here that means there's an upgrade waiting for us.
+    # We can use that as a reset image:
+    if selected=$(get_default_reset_image)
     then
         save_data update-target txt "${selected:-}"
         set_session_status 200
         return 0
     fi
 
+    # No upgrade waiting. We need to find a fallback image since we can't
+    # curently install the same image in more than one slot:
     if ! network_ok
     then
         log_msg "Update server not reachable"
@@ -239,48 +227,20 @@ find_reset_image ()
     fi
 
     log_msg "Searching for 'steamdeck' image which is not ${SELF[build]}"
-    
-    while read id;
-    do
-        case $id in
-            (+([0-9]).+([0-9]))
-              # the metadata stub is no longer fixed "VARIANT-ID-snapshot"
-              # so we have to go look and see what it is:
-              stub="$base/$id/"
-              manifest=$(get_manifest_filename "$stub")
-              stub="$base/$id/${manifest%.manifest.json}"
 
-              if read_atomupd_manifest <(curl -s "$base/$id/$manifest")
-              then
-                  log_msg "$id is a ${IMAGE[variant]} image"
-                  # only consider stable images
-                  if [ "${IMAGE[variant]}" != steamdeck ]; then continue; fi
+    # If a penultimate image is listed for us, we can downgrade instead.
+    # NOTE: There may not be a valid downgrade available.
+    if selected=$(get_alternate_reset_image)
+    then
+        save_data update-target txt "${selected:-}"
+        set_session_status 200
+        return 0
+    fi
 
-                  # if we're not on stable, just pick the newest stable image
-                  if [ "${SELF[variant]}" != steamdeck ]
-                  then
-                      selected="${stub}.raucb"
-                      break
-                  # we're on stable, pick the newest that isn't us: 
-                  elif [ "${SELF[build]}" != "${IMAGE[build]}" ]
-                  then
-                      selected="${stub}.raucb"
-                      break
-                  else
-                      # for reasons (to do with btrfs & duplicate fs uuids)
-                      # we cannot have two or more copies of an image installed
-                      log_msg "${SELF[build]} already installed, skipping..."
-                  fi
-              fi
-            ;;
-        esac
-    done < <(xsltproc --html <(echo "$LIST_IMAGES") <(curl -s "${base}/") | sort -rn)
-
-    log_msg "Current image ${SELF[build]} (${SELF[variant]})"
-    log_msg "Selecting ${IMAGE[build]} (${IMAGE[variant]})"
-
-    save_data update-target txt "$selected"
-    set_session_status 200
+    # No upgrade or downgrade available. Can't do a full reset.
+    set_session_status 404
+    save_data update-target txt ""
+    return 0
 }
 
 check_os_status ()
@@ -296,7 +256,7 @@ check_os_status ()
         then
             set_session_status 500
             log_msg "/etc/steamos-atomupd/client.conf invalid"
-            log_msg "Query URL: ${ATOMUPD_QUERY_URL:-}"
+            log_msg "Meta URL: ${ATOMUPD_META_URL:-}"
             log_msg "Image URL: ${ATOMUPD_IMAGE_URL:-}"
             return
         else

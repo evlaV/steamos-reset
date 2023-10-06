@@ -227,7 +227,7 @@ find_reset_image ()
 
     # No upgrade waiting. We need to find a fallback image since we can't
     # curently install the same image in more than one slot:
-    log_msg "Searching for 'steamdeck' image which is not ${SELF[build]}"
+    log_msg "Searching for '${SELF[variant]}' image which is not ${SELF[build]}"
 
     # If a penultimate image is listed for us, we can downgrade instead.
     # NOTE: There may not be a valid downgrade available.

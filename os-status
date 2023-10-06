@@ -42,7 +42,7 @@ os_is_unmodified ()
         log_msg "Installed image is unmodified"
         return 0
     else
-        log_msg "Installed image has been moodified"
+        log_msg "Installed image has been modified"
         return 1
     fi
 }

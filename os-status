@@ -208,6 +208,14 @@ find_reset_image ()
 {
     read_current_manifest
 
+    # We need to talk to the atomupd server to check for updates:
+    if ! network_ok
+    then
+        log_msg "Update server not reachable"
+        set_session_status 511
+        return 0
+    fi
+
     # If we get an image here that means there's an upgrade waiting for us.
     # We can use that as a reset image:
     if selected=$(get_default_reset_image)
@@ -219,13 +227,6 @@ find_reset_image ()
 
     # No upgrade waiting. We need to find a fallback image since we can't
     # curently install the same image in more than one slot:
-    if ! network_ok
-    then
-        log_msg "Update server not reachable"
-        set_session_status 511
-        return 0
-    fi
-
     log_msg "Searching for 'steamdeck' image which is not ${SELF[build]}"
 
     # If a penultimate image is listed for us, we can downgrade instead.

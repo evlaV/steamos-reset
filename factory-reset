@@ -101,6 +101,9 @@ update_from_url ()
         do
             if [ -n "$logtxt" ]; then lastlog="$logtxt"; fi
 
+            # IMPORTANT: %age progress log message is to be treated as ABI.
+            # "New OS image: X%" is used by steam to track progress in its UI.
+            # Do not change this unless you also update steam in sync.
             case $logtxt in
                 (+([0-9])%) log_msg "New OS image: $logtxt"; ;;
                 *) log_msg "$logtxt"; ;;

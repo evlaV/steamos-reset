@@ -105,7 +105,7 @@ update_from_url ()
             # "New OS image: X%" is used by steam to track progress in its UI.
             # Do not change this unless you also update steam in sync.
             case $logtxt in
-                (+([0-9])%) log_msg "New OS image: $logtxt"; ;;
+                (+([0-9.])%*) log_msg "New OS image: $logtxt"; ;;
                 *) log_msg "$logtxt"; ;;
             esac
         done < <(atomic_update "${url:-}" 2>&1 && touch .ok)

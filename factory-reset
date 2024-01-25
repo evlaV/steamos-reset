@@ -103,9 +103,13 @@ update_from_url ()
 
             # IMPORTANT: %age progress log message is to be treated as ABI.
             # "New OS image: X%" is used by steam to track progress in its UI.
+            # Steam expects:
+            #    "New OS image: XX%" or
+            #    "New OS image: XX.XX%"
+            # with no trailing text (eg optional ETA estimates)
             # Do not change this unless you also update steam in sync.
             case $logtxt in
-                (+([0-9.])%*) log_msg "New OS image: $logtxt"; ;;
+                (+([0-9.])%*) log_msg "New OS image: ${logtxt%\%*}%"; ;;
                 *) log_msg "$logtxt"; ;;
             esac
         done < <(atomic_update "${url:-}" 2>&1 && touch .ok)

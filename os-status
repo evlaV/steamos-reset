@@ -185,13 +185,9 @@ get_alternate_reset_image ()
 {
     local variant path
 
-    # There should be some static metadata at:
-    # META_URL/<product>/<arch>/<version>/<variant>.second_last.json
-    local -r mspec=${SELF[product]}/${SELF[arch]}/${SELF[version]}/${SELF[variant]}
-    local -r meta=${ATOMUPD_META_URL}/${mspec}.second_last.json
-
-    log_msg "Checking for alternate reset image at $meta"
-    read variant path < <(curl -s "$meta" | parse_atomupd_response)
+    log_msg "Calling steamos-atomupd-client to obtain the alternate reset image"
+    read variant path < \
+         <(steamos-atomupd-client --penultimate-update --query-only | parse_atomupd_response)
 
     if [ "${variant:-null}" = null ]
     then

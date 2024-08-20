@@ -160,11 +160,16 @@ delete_completed_sessions ()
 factory_reset ()
 {
     local arg uuid=
+    local arg reset_os_args=
+    local arg reset_user_data_args=
 
     for arg in "$@"
     do
         case $arg in
-            scanuuid=*) uuid="${arg#scanuuid=}"; break; ;;
+            scanuuid=*) uuid="${arg#scanuuid=}"; ;;
+            --reset-os) reset_os_args="--reset-os"; ;;
+            --reset-user-data) reset_user_data_args="--reset-user-data"; ;;
+            --reset-all) reset_os_args="--reset-all"; ;;
         esac
     done
 
@@ -184,7 +189,7 @@ EOF
         exit 1
     fi
 
-    execute_backend factory-reset scanuuid="$uuid"
+    execute_backend factory-reset scanuuid="$uuid" $reset_os_args $reset_user_data_args
 }
 
 declare -r verb=${1:-boot-status}; shift || true

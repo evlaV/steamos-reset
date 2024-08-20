@@ -14,6 +14,12 @@ shopt -s extglob
 set +e
 
 declare SCANUUID
+declare RESET_OS
+declare RESET_USER
+declare RESET_ARGUMENT_USED
+RESET_OS="0"
+RESET_USER="0"
+RESET_ARGUMENT_USED="0"
 
 parse_args ()
 {
@@ -23,8 +29,27 @@ parse_args ()
             scanuuid=*)
                 SCANUUID=${arg#*=}
                 ;;
+            --reset-os)
+                RESET_OS="1"
+                RESET_ARGUMENT_USED="1"
+               ;;
+            --reset-user-data)
+                RESET_USER="1"
+                RESET_ARGUMENT_USED="1"
+                ;;
+            --reset-all)
+                RESET_OS="1"
+                RESET_USER="1"
+                RESET_ARGUMENT_USED="1"
+                ;;
         esac
     done
+
+    # If no --reset argument was used, reset everything
+    if [ $RESET_ARGUMENT_USED -eq "0" ]; then
+        RESET_OS="1"
+        RESET_USER="1"
+    fi
 }
 
 parse_args "$@"
@@ -185,6 +210,13 @@ reset_os ()
         return 0        
     fi
 
+    log_msg "Factory reset ready"
+    set_session_status 200
+    return 0
+}
+
+reset_user_data ()
+{
     log_msg "Generating filesystem cleanup config in $FACTORY_RESET_CONFIG_DIR"
     if ! generate_factory_reset_config
     then
@@ -193,8 +225,7 @@ reset_os ()
         set_session_status 500
         return 0
     fi
-
-    log_msg "Factory reset ready"
+    log_msg "Reset user data config ready"
     set_session_status 200
     return 0
 }
@@ -209,7 +240,14 @@ setup_session_dirs
 set_session_type factory-reset
 set_session_status 102
 
-(close_stdio; register_session_pid; reset_os ${need_update:-0} ${atom_url:-}) &
+if [ $RESET_OS -eq "1" ]; then
+    (close_stdio; register_session_pid; reset_os ${need_update:-0} ${atom_url:-}) &
+fi
+
+if [ $RESET_USER -eq "1" ]; then
+    (close_stdio; register_session_pid; reset_user_data ) &
+fi
+
 [ -t 2 ] || disown
 
 emit_json_response 102 "Factory reset started"

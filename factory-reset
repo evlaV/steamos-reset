@@ -237,13 +237,18 @@ setup_session_dirs
 set_session_type factory-reset
 set_session_status 102
 
-if [ $RESET_OS -eq "1" ]; then
-    (close_stdio; register_session_pid; reset_os ${need_update:-0} ${atom_url:-}) &
-fi
-
-if [ $RESET_USER -eq "1" ]; then
-    (close_stdio; register_session_pid; reset_user_data ) &
-fi
+case $RESET_OS$RESET_USER in
+    11)
+        (close_stdio; register_session_pid;
+         reset_os ${need_update:-0} ${atom_url:-} & reset_user_data) &
+        ;;
+    01)
+        (close_stdio; register_session_pid; reset_user_data) &
+        ;;
+    10)
+        (close_stdio; register_session_pid; reset_os ${need_update:-0} ${atom_url:-}) &
+        ;;
+esac
 
 [ -t 2 ] || disown
 

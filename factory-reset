@@ -14,12 +14,9 @@ shopt -s extglob
 set +e
 
 declare SCANUUID
-declare RESET_OS
-declare RESET_USER
-declare RESET_ARGUMENT_USED
-RESET_OS="0"
-RESET_USER="0"
-RESET_ARGUMENT_USED="0"
+declare -i RESET_OS="0"
+declare -i RESET_USER="0"
+declare -i RESET_ARGUMENT_USED="0"
 
 parse_args ()
 {

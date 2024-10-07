@@ -183,6 +183,13 @@ factory_reset ()
             uuid=$(get_cached_os_status_uuid)
         fi
 
+        # Nothing cached, run the os-status backend to fix this
+        # NOTE: execute_backend will wait for the async backend to finish
+        if [ -z "$uuid" ] || [ "$uuid" = null ]
+        then
+            uuid=$(execute_backend os-status | jq -rc .uuid)
+        fi
+
         # nothing passed in, nothing cached: error
         if [ -z "$uuid" ] || [ "$uuid" = null ]
         then

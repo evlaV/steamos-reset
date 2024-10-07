@@ -51,18 +51,25 @@ parse_args ()
 
 parse_args "$@"
 
-if ! uuid_ok "${SCANUUID:-none}"
+# If we are doing an OS reset we'll need a scan uuid to get the atom update URL
+# to update the OS partitions from/with:
+if [ $RESET_OS = 1 ]
 then
-    emit_json_response 400 "Malformed session id '${SCANUUID:-}'"
-    exit 0
-fi
+    if ! uuid_ok "${SCANUUID:-none}"
+    then
+        emit_json_response 400 "Malformed session id '${SCANUUID:-}'"
+        exit 0
+    fi
 
-declare -r stype=$(get_data session-type txt $SCANUUID)
+    declare -r stype=$(get_data session-type txt $SCANUUID)
 
-if [ "${stype:-none}" != os-status ]
-then
-    emit_json_response 400 "Session $SCANUUID was not an os-status check"
-    exit 0
+    if [ "${stype:-none}" != os-status ]
+    then
+        emit_json_response 400 "Session $SCANUUID was not an os-status check"
+        exit 0
+    fi
+else
+    SCANUUID=none
 fi
 
 atomic_update ()
@@ -229,8 +236,14 @@ reset_user_data ()
 
 log_msg "Factory-Reset $@ started at $(date +%Y-%m-%d\ %H:%M:%S\ %z)"
 
-declare -r atom_url=$(get_data update-target txt $SCANUUID)
-declare -ir need_update=$(get_data update-needed txt $SCANUUID)
+if [ $SCANUUID = none ]
+then
+    declare -r atom_url=file:///dev/null
+    declare -ir need_update=0
+else
+    declare -r atom_url=$(get_data update-target txt $SCANUUID)
+    declare -ir need_update=$(get_data update-needed txt $SCANUUID)
+fi
 
 set_uuid
 setup_session_dirs

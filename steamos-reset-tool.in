@@ -173,20 +173,27 @@ factory_reset ()
         esac
     done
 
-    # no session UUID from user, find a cached one
-    if [ -z "$uuid" ] || [ "$uuid" = null ]
+    # We only need a cached os-status if we're resetting the OS partitions(s)
+    # The OS state doesn't matter if we're only scrubbing user data from /home
+    if [ -n "$reset_os_args" ]
     then
-        uuid=$(get_cached_os_status_uuid)        
-    fi
+        # no session UUID from user, find a cached one
+        if [ -z "$uuid" ] || [ "$uuid" = null ]
+        then
+            uuid=$(get_cached_os_status_uuid)
+        fi
 
-    # nothing passed in, nothing cached: error
-    if [ -z "$uuid" ] || [ "$uuid" = null ]
-    then
-        cat - <<EOF
+        # nothing passed in, nothing cached: error
+        if [ -z "$uuid" ] || [ "$uuid" = null ]
+        then
+            cat - <<EOF
 {"status": 404,
  "message": "No factory reset settings found, run $0 os-status"}
 EOF
-        exit 1
+            exit 1
+        fi
+    else
+        uuid=null
     fi
 
     execute_backend factory-reset scanuuid="$uuid" $reset_os_args $reset_user_data_args

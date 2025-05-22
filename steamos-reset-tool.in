@@ -159,9 +159,10 @@ delete_completed_sessions ()
 
 factory_reset ()
 {
-    local arg uuid=
-    local arg reset_os_args=
-    local arg reset_user_data_args=
+    local arg=
+    local uuid=
+    local reset_os_args=
+    local reset_user_data_args=
 
     for arg in "$@"
     do
@@ -172,6 +173,12 @@ factory_reset ()
             --reset-all) reset_os_args="--reset-all"; ;;
         esac
     done
+
+    # reinstate the old "no specific mode requested" behaviour:
+    if [ -z "${reset_os_args:-}" ] && [ -z "${reset_user_data_args:-}" ]
+    then
+        reset_os_args="--reset-all"
+    fi
 
     # We only need a cached os-status if we're resetting the OS partitions(s)
     # The OS state doesn't matter if we're only scrubbing user data from /home

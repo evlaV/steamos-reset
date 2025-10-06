@@ -117,7 +117,7 @@ resolve_fqdn ()
               log_msg "$fqdn resolved to IPv6 $addr (${name:-})"
               return 0
               ;;
-            (+([0-9].))
+            (+([0-9.]))
               log_msg "$fqdn resolved to IPv4 $addr (${name:-})"
               return 0
               ;;

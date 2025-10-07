@@ -189,6 +189,7 @@ reset_os ()
 {
     local -i update=${1:-0}
     local url=${2:-}
+    local report_success=${3:-yes}
     local cfg
     
     if [ $update -eq 0 ]
@@ -215,7 +216,9 @@ reset_os ()
     fi
 
     log_msg "Factory reset ready"
-    set_session_status 200
+    if [[ "${report_success}" == "yes" ]]; then
+        set_session_status 200
+    fi
     return 0
 }
 
@@ -253,7 +256,7 @@ set_session_status 102
 case $RESET_OS$RESET_USER in
     11)
         (close_stdio; register_session_pid;
-         reset_os ${need_update:-0} ${atom_url:-} & reset_user_data) &
+         reset_os ${need_update:-0} ${atom_url:-} "dont_report_success"; reset_user_data) &
         ;;
     01)
         (close_stdio; register_session_pid; reset_user_data) &

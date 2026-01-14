@@ -86,9 +86,9 @@ read_atomupd_manifest ()
     local -r JQ='"\(.product) \(.release) \(.variant) \(.arch) \(.version) \(.buildid)"'
     read PRODUCT RELEASE VARIANT ARCH VER BUILD < <(jq -r "$JQ" "$1");
 
-    IMAGE[product]=${PRODUCT:-steamos}
+    IMAGE[product]=${PRODUCT:-holo}
     IMAGE[release]=${RELEASE:-holo}
-    IMAGE[variant]=${VARIANT:-steamdeck}
+    IMAGE[variant]=${VARIANT:-generic}
     IMAGE[arch]=${ARCH:-amd64}
     IMAGE[version]=${VER:-snapshot}
     IMAGE[build]=${BUILD:-19000101.1}

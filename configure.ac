@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-# Copyright © 2022 Collabora Ltd
-# Copyright © 2022 Valve Corporation
+# Copyright © 2022-2023,2026 Collabora Ltd
+# Copyright © 2022-2023,2026 Valve Corporation
 
 AC_INIT([steamos-reset],[0.02],[vivek@collabora.com])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -58,6 +58,6 @@ AC_SUBST([PKGDATADIR],[$datarootdir])
 AC_SUBST([LIBEXECDIR],[$libexecdir])
 AC_SUBST([PKGLIBDIR],[$libdir/$PACKAGE])
 
-AC_CONFIG_FILES([Makefile steamos-reset.sh steamos-reset steamos-reset-tool
+AC_CONFIG_FILES([Makefile steamos-reset.sh holo-reset steamos-reset-tool
                  lighttpd/steamos-reset.conf])
 AC_OUTPUT

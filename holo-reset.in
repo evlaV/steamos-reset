@@ -2,13 +2,13 @@
 
 # SPDX-License-Identifier: GPL-2.0+
 
-# Copyright © 2022 Collabora Ltd
-# Copyright © 2022 Valve Corporation
+# Copyright © 2022,2026 Collabora Ltd
+# Copyright © 2022.2026 Valve Corporation
 
 uibin=
 prefix=@prefix@
 exec_prefix=@exec_prefix@
-declare -r RUNTMP=/run/user/$UID/steamos-reset
+declare -r RUNTMP=/run/user/$UID/holo-reset
 declare -r PIDFILE=$RUNTMP/$$.pid
 
 choose_ui ()

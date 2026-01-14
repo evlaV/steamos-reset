@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-# Copyright © 2022 Collabora Ltd
-# Copyright © 2022 Valve Corporation
+# Copyright © 2022-2023,2026 Collabora Ltd
+# Copyright © 2022-2023,2026 Valve Corporation
 
 PKGSHAREDIR:= ${prefix}/share/$(PACKAGE_NAME)
 # where the wrapper hardlinks live - would be under var,
@@ -21,7 +21,7 @@ CLI        := steamos-reset-tool
 LIGHTTPD   := lighttpd/steamos-reset.conf
 SERVICE    := lighttpd/steamos-reset.service
 LIGHTTPCFG := $(LIGHTTPDIR)/$(notdir $(LIGHTTPD))
-BUILT      := $(WRAPPER) steamos-reset.sh $(LIGHTTPD) steamos-reset $(SRVCTL)
+BUILT      := $(WRAPPER) steamos-reset.sh $(LIGHTTPD) holo-reset $(SRVCTL)
 DEFS        = -DVERSION=\"$(PACKAGE_VERSION)\"
 
 # where the actual scripts invoked by the wrapper live:
@@ -33,7 +33,7 @@ CLEANFILES  = $(BUILT)
 
 noinst_PROGRAMS    = $(WRAPPER) $(SRVCTL)
 pkglibexec_SCRIPTS = $(BACKENDS) $(SH_LIBS)
-bin_SCRIPTS = $(ifneq ,$(DESKTOPS),steamos-reset)
+bin_SCRIPTS = $(ifneq ,$(DESKTOPS),holo-reset)
 
  ifneq (,$(filter qml all,$(UI)))
  include qml.mk

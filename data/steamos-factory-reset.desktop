@@ -3,5 +3,5 @@ Name=SteamOS Reset (@VARIANT@)
 Icon=/usr/share/steamos-reset/steamos-reset 
 Comment=Reinstall an official SteamOS image and erase all personal data
 Type=Application
-Exec=steamos-reset --ui @variant@
+Exec=holo-reset --ui @variant@
 SingleMainwindow=true

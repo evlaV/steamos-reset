@@ -1,10 +1,10 @@
-SOURCES   += steamos-reset.cpp
+SOURCES   += holo-reset.cpp
 CONFIG    += release
 QT        += quick qml gui
 
 resources.prefix = /
 resources.files  = \
-    steamos-reset.qml       \
+    holo-reset.qml       \
     qtquickcontrols2.conf   \
     icons/spinner.png       \
     icons/activate.png      \

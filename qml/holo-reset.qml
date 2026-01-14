@@ -13,7 +13,7 @@ import "qrc:/js/reset.js" as Core
 ApplicationWindow
 {
     id: root
-    title: qsTr("SteamOS Factory Reset")
+    title: qsTr("Holo Factory Reset")
     width: 800
     height: 480
     visible: true
@@ -74,7 +74,7 @@ ApplicationWindow
             Label
             {
                 id: title
-                text: "SteamOS Factory Reset"
+                text: "Holo Factory Reset"
                 anchors.centerIn: parent
                 font.pointSize: 24
             }
@@ -133,7 +133,7 @@ ApplicationWindow
                     {
                         id: freshen
                         visible: false
-                        text: qsTr("  • Install a fresh SteamOS image")
+                        text: qsTr("  • Install a fresh Holo image")
                         Component.onCompleted: { register_ui(freshen,'need-update') }
                     }
                     Label { text: qsTr("  • Prepare to erase user data on reboot") }

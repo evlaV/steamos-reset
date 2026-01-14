@@ -55,7 +55,7 @@ function get_service_response(url)
         {
             result = { "state": "FAILED",
                        "result": {},
-                       "message": "SteamOS Factory Reset Service Unavailable" };
+                       "message": "Holo Factory Reset Service Unavailable" };
         }
         else
         {

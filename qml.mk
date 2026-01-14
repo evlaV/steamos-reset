@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-# Copyright © 2022 Collabora Ltd
-# Copyright © 2022 Valve Corporation
-QML_BIN := qml/steamos-reset
-QML_SRC := qml/steamos-reset.cpp \
-           qml/steamos-reset.qml \
-           qml/steamos-reset.pro \
+# Copyright © 2022,2026 Collabora Ltd
+# Copyright © 2022,2026 Valve Corporation
+QML_BIN := qml/holo-reset
+QML_SRC := qml/holo-reset.cpp \
+           qml/holo-reset.qml \
+           qml/holo-reset.pro \
            qml/qtquickcontrols2.conf \
            qml/js/reset.js   \
            qml/js/backend.js \
@@ -34,10 +34,10 @@ distclean-qml:
 install-qml:
 	install -d $(DESTDIR)$(pkglibdir)/bin
 	install -s -m 0755 -T \
-	    $(QML_BIN) $(DESTDIR)$(pkglibdir)/bin/steamos-reset-qml
+	    $(QML_BIN) $(DESTDIR)$(pkglibdir)/bin/holo-reset-qml
 
 uninstall-qml:
-	@rm -vf $(DESTDIR)$(pkglibdir)/bin/steamos-reset-qml
+	@rm -vf $(DESTDIR)$(pkglibdir)/bin/holo-reset-qml
 
 clean-local: clean-qml
 distclean-local: distclean-qml

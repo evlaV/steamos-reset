@@ -15,7 +15,7 @@ LIGHTTPDIR := $(PKGSHAREDIR)/lighttpd
 VARIANTS   := 
 BACKENDS   := debug status os-status boot-status factory-reset undo-reset clear
 SH_LIBS    := holo-reset.sh
-WRAPPER    := steamos-reset-wrapper
+WRAPPER    := holo-reset-wrapper
 SRVCTL     := steamos-reset-service
 CLI        := steamos-reset-tool
 LIGHTTPD   := lighttpd/steamos-reset.conf
@@ -56,7 +56,7 @@ debug-build:
 	@echo ui: $(VARIANTS)
 	@echo .desktop: $(DESKTOPS)
 
-steamos_reset_wrapper_SOURCES = wrapper.c
+holo_reset_wrapper_SOURCES = wrapper.c
 steamos_reset_service_SOURCES = srvctl.c
 
 steamos-factory-reset.%.desktop: data/steamos-factory-reset.desktop

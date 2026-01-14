@@ -56,12 +56,12 @@ reset_ui_running ()
 
 choose_ui "$@"
 
-/sbin/steamos-reset-service on
+/sbin/holo-reset-service on
 mkdir -p "$RUNTMP" && touch "$PIDFILE"
 "$uibin"
 rm -vf "$PIDFILE"
 
 if ! reset_ui_running
 then
-    /sbin/steamos-reset-service off
+    /sbin/holo-reset-service off
 fi

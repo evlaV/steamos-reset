@@ -1,0 +1,10 @@
+[Unit]
+Description=Holo Factory Reset Web Service
+After=syslog.target network.target
+
+[Service]
+PrivateTmp=true
+ExecStart=/usr/bin/lighttpd-angel -D -f /usr/share/steamos-reset/lighttpd/holo-reset.conf
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGINT
+

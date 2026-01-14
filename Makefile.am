@@ -17,10 +17,10 @@ VARIANTS   :=
 BACKENDS   := debug status os-status boot-status factory-reset undo-reset clear
 SH_LIBS    := holo-reset.sh
 WRAPPER    := holo-reset-wrapper
-SRVCTL     := steamos-reset-service
+SRVCTL     := holo-reset-service
 CLI        := holo-reset-tool
-LIGHTTPD   := lighttpd/steamos-reset.conf
-SERVICE    := lighttpd/steamos-reset.service
+LIGHTTPD   := lighttpd/holo-reset.conf
+SERVICE    := lighttpd/holo-reset.service
 LIGHTTPCFG := $(LIGHTTPDIR)/$(notdir $(LIGHTTPD))
 BUILT      := $(WRAPPER) holo-reset.sh $(LIGHTTPD) holo-reset $(SRVCTL)
 DEFS        = -DVERSION=\"$(PACKAGE_VERSION)\"
@@ -59,7 +59,7 @@ debug-build:
 	@echo .desktop: $(DESKTOPS)
 
 holo_reset_wrapper_SOURCES = wrapper.c
-steamos_reset_service_SOURCES = srvctl.c
+holo_reset_service_SOURCES = srvctl.c
 
 steamos-factory-reset.%.desktop: data/steamos-factory-reset.desktop
 	@sed -e 's/@VARIANT@/\U$(*)/g; s/@variant@/$(*)/g' < $^ > $@

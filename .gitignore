@@ -20,7 +20,7 @@ cef/build/
 *.sha1.ok
 cef/third_party/cef/*.tar.bz2
 .dirstamp
-steamos-reset-service
+holo-reset-service
 holo-reset-tool
 holo-reset
 steamos-factory-reset.*.desktop

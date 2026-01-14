@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0+
 
-// Copyright © 2022 Collabora Ltd
-// Copyright © 2022 Valve Corporation
+// Copyright © 2022,2026 Collabora Ltd
+// Copyright © 2022,2026 Valve Corporation
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -32,7 +32,7 @@ void usage (int argc, char **argv)
 
 int main (int argc, char **argv)
 {
-    char *args[] = { SCTL, NULL, "steamos-reset" , NULL };
+    char *args[] = { SCTL, NULL, "holo-reset" , NULL };
 
     if( argc == 2 )
     {

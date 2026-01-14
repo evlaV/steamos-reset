@@ -59,5 +59,5 @@ AC_SUBST([LIBEXECDIR],[$libexecdir])
 AC_SUBST([PKGLIBDIR],[$libdir/$PACKAGE])
 
 AC_CONFIG_FILES([Makefile holo-reset.sh holo-reset holo-reset-tool
-                 lighttpd/steamos-reset.conf])
+                 lighttpd/holo-reset.conf])
 AC_OUTPUT

@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
     QIcon icon;
 
-    icon.addFile(":/icons/steamos-reset.svg");
+    icon.addFile(":/icons/holo-reset.svg");
     engine.load(QUrl("qrc:/holo-reset.qml"));
     app.setWindowIcon(icon);
 

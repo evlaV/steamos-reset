@@ -45,7 +45,7 @@ bin_SCRIPTS = $(ifneq ,$(DESKTOPS),holo-reset)
  include cef.mk
  endif
 
-DESKTOPS = $(foreach v,$(VARIANTS),steamos-factory-reset.$(v).desktop)
+DESKTOPS = $(foreach v,$(VARIANTS),holo-factory-reset.$(v).desktop)
 CLEANFILES += $(DESKTOPS)
 
 .PHONY: install clean debug-build
@@ -61,7 +61,7 @@ debug-build:
 holo_reset_wrapper_SOURCES = wrapper.c
 holo_reset_service_SOURCES = srvctl.c
 
-steamos-factory-reset.%.desktop: data/steamos-factory-reset.desktop
+holo-factory-reset.%.desktop: data/holo-factory-reset.desktop
 	@sed -e 's/@VARIANT@/\U$(*)/g; s/@variant@/$(*)/g' < $^ > $@
 
 $(BACKENDS):
@@ -79,7 +79,7 @@ install-data-hook: all
 	install -d $(DESTDIR)$(UNITDIR)
 	install -m 0644 -T $(SERVICE) $(DESTDIR)$(UNITDIR)/$(notdir $(SERVICE))
 	install -d $(DESTDIR)$(PKGSHAREDIR)
-	install -m 0644 -t $(DESTDIR)$(PKGSHAREDIR) data/steamos-reset.svg
+	install -m 0644 -t $(DESTDIR)$(PKGSHAREDIR) data/holo-reset.svg
 	install -d $(DESTDIR)$(PKGDATADIR)/applications
 	if [ -n "$(DESKTOPS)" ]; then \
 	  install -m 0644 -t $(DESTDIR)$(PKGDATADIR)/applications $(DESKTOPS); \
@@ -104,7 +104,7 @@ uninstall-hook: uninstall-aliases
 	rm -vf $(DESTDIR)$(CGI_BINDIR)/$(notdir $(WRAPPER))
 	(for d in $(DESKTOPS); \
 	 do rm -vf $(DESTDIR)$(PKGDATADIR)/applications/$$d; done)
-	rm -vf $(DESTDIR)$(PKGSHAREDIR)/steamos-reset.svg
+	rm -vf $(DESTDIR)$(PKGSHAREDIR)/holo-reset.svg
 	rm -vf $(DESTDIR)$(sbindir)/$(notdir $(SRVCTL))
 	rm -vf $(DESTDIR)$(sbindir)/$(notdir $(CLI))
 	(for s in $(BACKENDS); do rm -vf $(DESTDIR)$(CGI_BINDIR)/$$s; done)

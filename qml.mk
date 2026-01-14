@@ -11,8 +11,8 @@ QML_SRC := qml/holo-reset.cpp \
            qml/js/backend.js \
            qml/icons/activate.png \
            qml/icons/spinner.png \
-           data/steamos-reset.svg
-QML_ICON := qml/icons/steamos-reset.svg
+           data/holo-reset.svg
+QML_ICON := qml/icons/holo-reset.svg
 VARIANTS += qml
 
 

@@ -8,7 +8,7 @@ resources.files  = \
     qtquickcontrols2.conf   \
     icons/spinner.png       \
     icons/activate.png      \
-    icons/steamos-reset.svg \
+    icons/holo-reset.svg    \
     js/reset.js             \
     js/backend.js
 RESOURCES = resources

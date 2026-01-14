@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 set(CMAKE_BUILD_TYPE Release)
 
-project(steamos-reset)
+project(holo-reset)
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 set_property(GLOBAL PROPERTY OS_FOLDERS ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -31,7 +31,7 @@ list(APPEND CEF_C_COMPILER_FLAGS -fexceptions)
 list(APPEND CEF_CXX_COMPILER_FLAGS -fexceptions)
 
 # Target executable names.
-set(APP_TARGET "steamos-reset")
+set(APP_TARGET "holo-reset")
 # Logical target used to link the libcef library.
 ADD_LOGICAL_TARGET("libcef_lib" "${CEF_LIB_DEBUG}" "${CEF_LIB_RELEASE}")
 # Determine the target output directory.
@@ -54,15 +54,15 @@ if(OS_LINUX)
   target_link_libraries(${APP_TARGET} app::rc libcef_lib libcef_dll_wrapper ${CEF_STANDARD_LIBS})
 
   # Set rpath so that libraries can be placed next to the executable.
-  set_target_properties(${APP_TARGET} PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/steamos-reset")
+  set_target_properties(${APP_TARGET} PROPERTIES INSTALL_RPATH "$ORIGIN/../lib/holo-reset")
   set_target_properties(${APP_TARGET} PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
   set_target_properties(${APP_TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CEF_TARGET_OUT_DIR}/bin")
 
   # Copy binary and resource files to the target output directory.
-  COPY_FILES("${APP_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}/lib/steamos-reset")
-  COPY_FILES("${APP_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}/lib/steamos-reset")
+  COPY_FILES("${APP_TARGET}" "${CEF_BINARY_FILES}" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}/lib/holo-reset")
+  COPY_FILES("${APP_TARGET}" "${CEF_RESOURCE_FILES}" "${CEF_RESOURCE_DIR}" "${CEF_TARGET_OUT_DIR}/lib/holo-reset")
   if (EXISTS "${CEF_BINARY_DIR}/libminigbm.so")
-    COPY_FILES("${APP_TARGET}" "libminigbm.so" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}/lib/steamos-reset")
+    COPY_FILES("${APP_TARGET}" "libminigbm.so" "${CEF_BINARY_DIR}" "${CEF_TARGET_OUT_DIR}/lib/holo-reset")
   endif()
 
   SET_LINUX_SUID_PERMISSIONS("${APP_TARGET}" "${CEF_TARGET_OUT_DIR}/bin/chrome-sandbox")

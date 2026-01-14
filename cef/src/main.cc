@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
   settings.chrome_runtime = false;
   settings.no_sandbox = false;
   settings.background_color = CefColorSetARGB(255, 150, 150, 150);
-  CefString(&settings.user_agent_product) = "SteamOs";
+  CefString(&settings.user_agent_product) = "Holo";
 
   CefInitialize(main_args, settings, app.get(), nullptr);
 

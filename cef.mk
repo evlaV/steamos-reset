@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0+
 
-# Copyright © 2022 Collabora Ltd
-# Copyright © 2022 Valve Corporation
+# Copyright © 2022,2026 Collabora Ltd
+# Copyright © 2022,2026 Valve Corporation
 CEF_VERSION := 98.1.19+g57be9e2+chromium-98.0.4758.80
 CEF_PLATFORM:= linux64_minimal
 CEF_DIST    := cef_binary_$(CEF_VERSION)_$(CEF_PLATFORM)
@@ -9,12 +9,12 @@ CEF_DLFROM  := https://cef-builds.spotifycdn.com
 CEF_3PARTY  := cef/third_party/cef/$(CEF_DIST)
 CEF_ARCHIVE := $(CEF_3PARTY).tar.bz2
 CEF_BUILD   := cef/CMakeLists.txt $(wilcard cef/cmake/*.cmake)
-CEF_BIN     := cef/build/Release/bin/steamos-reset$(EXEEXT)
-CEF_LIBDIR  := cef/build/Release/lib/steamos-reset
+CEF_BIN     := cef/build/Release/bin/holo-reset$(EXEEXT)
+CEF_LIBDIR  := cef/build/Release/lib/holo-reset
 CEF_LOCALES  = $(wildcard $(CEF_LIBDIR)/locales/*.pak)
 CEF_SHADER  := $(CEF_LIBDIR)/swiftshader/libEGL.so \
                $(CEF_LIBDIR)/swiftshader/libGLESv2.so
-CEF_LIBINST := $(pkglibdir)/lib/steamos-reset
+CEF_LIBINST := $(pkglibdir)/lib/holo-reset
 CEF_LIBDATA  = \
   $(wildcard $(CEF_LIBDIR)/*.dat)  \
   $(wildcard $(CEF_LIBDIR)/*.pak)  \
@@ -57,14 +57,14 @@ $(CEF_3PARTY)/.stamp: $(CEF_ARCHIVE).sha1.ok
 	  tar -C "$(@D)" --strip-components=1 -xavf "$(subst .sha1.ok,,$<)" && \
 	  touch "$@")
 
-STEAMOS_RESET_SRC = $(SR_CCSRC) $(SR_WEBSRC)
+HOLO_RESET_SRC = $(SR_CCSRC) $(SR_WEBSRC)
 
-$(STEAMOS_RESET_SRC) $(CEF_BUILD) $(CEF_ARCHIVE) $(CEF_ARCHIVE).sha1:
+$(HOLO_RESET_SRC) $(CEF_BUILD) $(CEF_ARCHIVE) $(CEF_ARCHIVE).sha1:
 
-cef/build/Release/bin/steamos-reset$(EXEEXT): $(CEF_BUILD)
-cef/build/Release/bin/steamos-reset$(EXEEXT): $(CEF_3PARTY)/.stamp
-cef/build/Release/bin/steamos-reset$(EXEEXT): $(CEF_ARCHIVE)
-cef/build/Release/bin/steamos-reset$(EXEEXT): $(STEAMOS_RESET_SRC)
+cef/build/Release/bin/holo-reset$(EXEEXT): $(CEF_BUILD)
+cef/build/Release/bin/holo-reset$(EXEEXT): $(CEF_3PARTY)/.stamp
+cef/build/Release/bin/holo-reset$(EXEEXT): $(CEF_ARCHIVE)
+cef/build/Release/bin/holo-reset$(EXEEXT): $(HOLO_RESET_SRC)
 	@mkdir -p cef/build
 	@cd cef/build/ && cmake ../ && make
 
@@ -79,7 +79,7 @@ clean-cef:
 install-cef:
 	install -d $(DESTDIR)$(pkglibdir)
 	install -s -m 0755 -T \
-	    $(CEF_BIN) $(DESTDIR)$(pkglibdir)/bin/steamos-reset-cef
+	    $(CEF_BIN) $(DESTDIR)$(pkglibdir)/bin/holo-reset-cef
 	install -d $(DESTDIR)$(CEF_LIBINST)
 	install -d $(DESTDIR)$(CEF_LIBINST)/locales
 	install -d $(DESTDIR)$(CEF_LIBINST)/swiftshader
@@ -89,7 +89,7 @@ install-cef:
 	install -s -m 0755 -t $(DESTDIR)$(CEF_LIBINST)/swiftshader $(CEF_SHADER)
 
 uninstall-cef:
-	rm -vf $(DESTDIR)$(pkglibdir)/bin/steamos-reset-cef
+	rm -vf $(DESTDIR)$(pkglibdir)/bin/holo-reset-cef
 	rm -vf $(DESTDIR)$(CEF_LIBINST)/locales/*.pak
 	rm -vf $(DESTDIR)$(CEF_LIBINST)/swiftshader/libEGL.so
 	rm -vf $(DESTDIR)$(CEF_LIBINST)/swiftshader/libGLESv2.so

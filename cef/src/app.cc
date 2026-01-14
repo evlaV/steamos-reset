@@ -144,7 +144,7 @@ void App::OnContextInitialized() {
     CefWindow::CreateTopLevelWindow(new WindowDelegate(browser_view));
   } else {
     CefWindowInfo window_info;
-    CefString(&window_info.window_name) = "SteamOS Factory Reset";
+    CefString(&window_info.window_name) = "Holo Factory Reset";
 
     CefBrowserHost::CreateBrowser(window_info, handler, url, browser_settings,
                                   nullptr, nullptr);

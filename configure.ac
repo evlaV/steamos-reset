@@ -3,7 +3,7 @@
 # Copyright © 2022-2023,2026 Collabora Ltd
 # Copyright © 2022-2023,2026 Valve Corporation
 
-AC_INIT([steamos-reset],[0.02],[vivek@collabora.com])
+AC_INIT([holo-reset],[0.03],[vivek@collabora.com])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Holo Reset (@VARIANT@)
-Icon=/usr/share/steamos-reset/steamos-reset 
+Icon=/usr/share/holo-reset/holo-reset
 Comment=Reinstall an official Holo image and erase all personal data
 Type=Application
 Exec=holo-reset --ui @variant@

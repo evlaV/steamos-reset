@@ -6,7 +6,7 @@
 SHELL      := /bin/bash
 PKGSHAREDIR:= ${prefix}/share/$(PACKAGE_NAME)
 # where the wrapper hardlinks live - would be under var,
-# but var is special on SteamOS:
+# but var is special on Holo:
 CGI_BINDIR := $(PKGSHAREDIR)/cgi
 # systemd service file location
 UNITDIR    := $(libdir)/systemd/system

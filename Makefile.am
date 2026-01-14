@@ -14,14 +14,14 @@ LIGHTTPDIR := $(PKGSHAREDIR)/lighttpd
 
 VARIANTS   := 
 BACKENDS   := debug status os-status boot-status factory-reset undo-reset clear
-SH_LIBS    := steamos-reset.sh
+SH_LIBS    := holo-reset.sh
 WRAPPER    := steamos-reset-wrapper
 SRVCTL     := steamos-reset-service
 CLI        := steamos-reset-tool
 LIGHTTPD   := lighttpd/steamos-reset.conf
 SERVICE    := lighttpd/steamos-reset.service
 LIGHTTPCFG := $(LIGHTTPDIR)/$(notdir $(LIGHTTPD))
-BUILT      := $(WRAPPER) steamos-reset.sh $(LIGHTTPD) holo-reset $(SRVCTL)
+BUILT      := $(WRAPPER) holo-reset.sh $(LIGHTTPD) holo-reset $(SRVCTL)
 DEFS        = -DVERSION=\"$(PACKAGE_VERSION)\"
 
 # where the actual scripts invoked by the wrapper live:

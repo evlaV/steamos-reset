@@ -58,6 +58,6 @@ AC_SUBST([PKGDATADIR],[$datarootdir])
 AC_SUBST([LIBEXECDIR],[$libexecdir])
 AC_SUBST([PKGLIBDIR],[$libdir/$PACKAGE])
 
-AC_CONFIG_FILES([Makefile steamos-reset.sh holo-reset steamos-reset-tool
+AC_CONFIG_FILES([Makefile holo-reset.sh holo-reset steamos-reset-tool
                  lighttpd/steamos-reset.conf])
 AC_OUTPUT

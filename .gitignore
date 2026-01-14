@@ -9,7 +9,7 @@ config.log
 config.status
 lighttpd/*.conf
 steamos-reset-wrapper
-steamos-reset.sh
+holo-reset.sh
 .deps
 qml/*.qrc
 qml/Makefile

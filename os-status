@@ -2,13 +2,13 @@
 
 # SPDX-License-Identifier: GPL-2.0+
 
-# Copyright © 2022 Collabora Ltd
-# Copyright © 2022 Valve Corporation
+# Copyright © 2022-2026 Collabora Ltd
+# Copyright © 2022-2026 Valve Corporation
 
 LIBDIR=$(dirname "$0")
 
 set -eu
-. ${LIBDIR:-.}/steamos-reset.sh
+. ${LIBDIR:-.}/holo-reset.sh
 shopt -s extglob
 set +e
 

@@ -30,7 +30,7 @@ choose_ui ()
         shift
     done
 
-    bin="@PKGLIBDIR@/bin/steamos-reset-${ui:-qml}"
+    bin="@PKGLIBDIR@/bin/holo-reset-${ui:-qml}"
 
     if [ -x $bin ]
     then

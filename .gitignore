@@ -21,6 +21,6 @@ cef/build/
 cef/third_party/cef/*.tar.bz2
 .dirstamp
 steamos-reset-service
-steamos-reset-tool
+holo-reset-tool
 holo-reset
 steamos-factory-reset.*.desktop

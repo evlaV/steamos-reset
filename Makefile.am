@@ -3,6 +3,7 @@
 # Copyright © 2022-2023,2026 Collabora Ltd
 # Copyright © 2022-2023,2026 Valve Corporation
 
+SHELL      := /bin/bash
 PKGSHAREDIR:= ${prefix}/share/$(PACKAGE_NAME)
 # where the wrapper hardlinks live - would be under var,
 # but var is special on SteamOS:
@@ -17,12 +18,13 @@ BACKENDS   := debug status os-status boot-status factory-reset undo-reset clear
 SH_LIBS    := holo-reset.sh
 WRAPPER    := holo-reset-wrapper
 SRVCTL     := steamos-reset-service
-CLI        := steamos-reset-tool
+CLI        := holo-reset-tool
 LIGHTTPD   := lighttpd/steamos-reset.conf
 SERVICE    := lighttpd/steamos-reset.service
 LIGHTTPCFG := $(LIGHTTPDIR)/$(notdir $(LIGHTTPD))
 BUILT      := $(WRAPPER) holo-reset.sh $(LIGHTTPD) holo-reset $(SRVCTL)
 DEFS        = -DVERSION=\"$(PACKAGE_VERSION)\"
+ALIASED     = $(patsubst %,$(sbindir)/%,$(CLI))
 
 # where the actual scripts invoked by the wrapper live:
 DEFS       += -DCGI_LIBDIR=\"${pkglibexecdir}\"
@@ -64,6 +66,13 @@ steamos-factory-reset.%.desktop: data/steamos-factory-reset.desktop
 
 $(BACKENDS):
 
+install-aliases: ADIRS := $(sort $(foreach D,$(ALIASED),$(dir $D)))
+install-aliases:
+	@echo ALIASED := "$(ALIASED)"
+	@(for ad in $(ADIRS); do install -d $(DESTDIR)$${ad}; done)
+	@(for al in $(ALIASED); \
+	  do ln -svf /usr/bin/holo-alias $(DESTDIR)$${al//holo/steamos}; done)
+
 install-data-hook: all
 	install -d $(DESTDIR)$(LIGHTTPDIR)
 	install -m 0644 -T $(LIGHTTPD) $(DESTDIR)$(LIGHTTPCFG)
@@ -76,7 +85,7 @@ install-data-hook: all
 	  install -m 0644 -t $(DESTDIR)$(PKGDATADIR)/applications $(DESKTOPS); \
 	fi
 
-install-exec-hook: all
+install-exec-hook: all install-aliases
 	install -d $(DESTDIR)$(CGI_BINDIR)
 	install -s -m 4755 -t $(DESTDIR)$(CGI_BINDIR) $(WRAPPER)
 	install -d $(DESTDIR)$(sbindir)
@@ -85,7 +94,11 @@ install-exec-hook: all
 	(cd $(DESTDIR)$(CGI_BINDIR); for s in $(BACKENDS); \
 	 do ln -f $(WRAPPER) $$s; done)
 
-uninstall-hook:
+uninstall-aliases:
+	@(for al in $(ALIASED); \
+	  do rm -vf $(DESTDIR)$${al//holo/steamos}; done)
+
+uninstall-hook: uninstall-aliases
 	rm -vf $(DESTDIR)$(LIGHTTPCFG)
 	rm -vf $(DESTDIR)$(UNITDIR)/$(notdir $(SERVICE))
 	rm -vf $(DESTDIR)$(CGI_BINDIR)/$(notdir $(WRAPPER))

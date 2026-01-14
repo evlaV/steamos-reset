@@ -87,7 +87,7 @@ atomic_update ()
             sleep 1
             echo "${x}%" >&2
         done
-        steamos-bootconf set-mode reboot-other
+        holo-bootconf set-mode reboot-other
     else
         steamos-atomupd-client --update-from-url "${url:-}"        
     fi
@@ -101,7 +101,7 @@ generate_factory_reset_config ()
     (cd $FACTORY_RESET_CONFIG_DIR && rm -vf * >&2)
 
     # suppress some annoying and unimportant warnings:
-    if ! steamos-factory-reset-config 2>&1
+    if ! holo-factory-reset-config 2>&1
     then
          rv=1
     fi | (grep -vF 'mv: failed to preserve ownership'||true)
@@ -156,8 +156,8 @@ update_from_url ()
 check_boot_status ()
 {
     local -i update=${1:-0}
-    local -r current=$(steamos-bootconf this-image)
-    local -r selected=$(steamos-bootconf selected-image)
+    local -r current=$(holo-bootconf this-image)
+    local -r selected=$(holo-bootconf selected-image)
 
     if [ $update -eq 1 ]
     then
@@ -199,7 +199,7 @@ reset_os ()
         log_msg "Updating OS image from ${url:-}"
         if ! update_from_url "${url:-}"
         then
-            steamos-bootconf set-mode reboot
+            holo-bootconf set-mode reboot
             set_session_status 500
             return 0
         fi
@@ -210,7 +210,7 @@ reset_os ()
         log_msg "Boot config OK, preparing to reset user data"
     else
         log_msg "Boot config not OK: Restoring boot to current image"
-        steamos-bootconf set-mode reboot
+        holo-bootconf set-mode reboot
         set_session_status 500
         return 0        
     fi
@@ -228,7 +228,7 @@ reset_user_data ()
     if ! generate_factory_reset_config
     then
         log_msg "Failed to generate reset config"
-        steamos-bootconf set-mode reboot
+        holo-bootconf set-mode reboot
         set_session_status 500
         return 0
     fi

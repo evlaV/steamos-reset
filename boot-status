@@ -38,8 +38,8 @@ emit_boot_status ()
 {
     local -i reset=0
     local -r service=$(quote_escape $(basename "$0"))
-    local -r current=$(steamos-bootconf this-image)
-    local -r selected=$(steamos-bootconf selected-image)
+    local -r current=$(holo-bootconf this-image)
+    local -r selected=$(holo-bootconf selected-image)
 
     emit_json_header
     cat - <<EOF

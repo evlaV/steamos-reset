@@ -13,9 +13,9 @@ set +e
 unreset_os ()
 {
     log_msg "Restoring boot to current image"
-    steamos-bootconf set-mode reboot
-    local -r current=$(steamos-bootconf this-image)
-    local -r selected=$(steamos-bootconf selected-image)
+    holo-bootconf set-mode reboot
+    local -r current=$(holo-bootconf this-image)
+    local -r selected=$(holo-bootconf selected-image)
     log_msg "Current image: ${current}; next boot: ${selected}"
     
     log_msg "Removing factory-reset configuration"

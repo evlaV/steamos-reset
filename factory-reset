@@ -211,8 +211,6 @@ reset_os ()
     else
         log_msg "Boot config not OK: Restoring boot to current image"
         holo-bootconf set-mode reboot
-        set_session_status 500
-        return 0        
     fi
 
     log_msg "Factory reset ready"

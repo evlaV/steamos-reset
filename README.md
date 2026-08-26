@@ -12,13 +12,6 @@ Building and installing:
     make
     sudo make install
     ```
-Adding to your desktop:
-
-   ```
-   cd ~/Desktop && \
-     ln -s /usr/share/applications/steamos-factory-reset.*.desktop .
-   ```
-
 ### Skipping the actual OS reset step
 
 The actual fetch-and-install of an OS image can be slow, so if you're
@@ -167,7 +160,6 @@ This repo contains:
    - a SUID wrapper to turn the unit on and off
 
  - A wrapper script that starts and stops the web service
- - .desktop files to launch the two UIs using the wrapper script
 
 ## lighttpd Integration
 

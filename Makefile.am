@@ -13,7 +13,6 @@ UNITDIR    := $(libdir)/systemd/system
 # lighttpd config
 LIGHTTPDIR := $(PKGSHAREDIR)/lighttpd
 
-VARIANTS   := 
 BACKENDS   := debug status os-status boot-status factory-reset undo-reset clear
 SH_LIBS    := holo-reset.sh
 WRAPPER    := holo-reset-wrapper
@@ -34,26 +33,18 @@ CLEANFILES  = $(BUILT)
 
 noinst_PROGRAMS    = $(WRAPPER) $(SRVCTL)
 pkglibexec_SCRIPTS = $(BACKENDS) $(SH_LIBS)
-bin_SCRIPTS = $(ifneq ,$(DESKTOPS),holo-reset)
-
-DESKTOPS = $(foreach v,$(VARIANTS),holo-factory-reset.$(v).desktop)
-CLEANFILES += $(DESKTOPS)
+bin_SCRIPTS = holo-reset
 
 .PHONY: install clean debug-build
 
-all: $(BUILT) $(DESKTOPS)
-binaries: $(BUILT) $(DESKTOPS)
+all: $(BUILT)
+binaries: $(BUILT)
 
 debug-build:
 	@echo built: $(BUILT)
-	@echo ui: $(VARIANTS)
-	@echo .desktop: $(DESKTOPS)
 
 holo_reset_wrapper_SOURCES = wrapper.c
 holo_reset_service_SOURCES = srvctl.c
-
-holo-factory-reset.%.desktop: data/holo-factory-reset.desktop
-	@sed -e 's/@VARIANT@/\U$(*)/g; s/@variant@/$(*)/g' < $^ > $@
 
 $(BACKENDS):
 
@@ -62,10 +53,6 @@ install-data-hook: all
 	install -m 0644 -T $(LIGHTTPD) $(DESTDIR)$(LIGHTTPCFG)
 	install -d $(DESTDIR)$(UNITDIR)
 	install -m 0644 -T $(SERVICE) $(DESTDIR)$(UNITDIR)/$(notdir $(SERVICE))
-	install -d $(DESTDIR)$(PKGDATADIR)/applications
-	if [ -n "$(DESKTOPS)" ]; then \
-	  install -m 0644 -t $(DESTDIR)$(PKGDATADIR)/applications $(DESKTOPS); \
-	fi
 
 install-exec-hook: all
 	install -d $(DESTDIR)$(CGI_BINDIR)
@@ -80,8 +67,6 @@ uninstall-hook:
 	rm -vf $(DESTDIR)$(LIGHTTPCFG)
 	rm -vf $(DESTDIR)$(UNITDIR)/$(notdir $(SERVICE))
 	rm -vf $(DESTDIR)$(CGI_BINDIR)/$(notdir $(WRAPPER))
-	(for d in $(DESKTOPS); \
-	 do rm -vf $(DESTDIR)$(PKGDATADIR)/applications/$$d; done)
 	rm -vf $(DESTDIR)$(sbindir)/$(notdir $(SRVCTL))
 	rm -vf $(DESTDIR)$(sbindir)/$(notdir $(CLI))
 	(for s in $(BACKENDS); do rm -vf $(DESTDIR)$(CGI_BINDIR)/$$s; done)

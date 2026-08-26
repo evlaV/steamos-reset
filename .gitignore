@@ -7,13 +7,10 @@ build-aux/
 configure
 config.log
 config.status
-lighttpd/*.conf
 holo-reset-wrapper
 holo-reset.sh
 .deps
 *~
 *.sha1.ok
 .dirstamp
-holo-reset-service
 holo-reset-tool
-holo-reset

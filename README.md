@@ -155,19 +155,8 @@ This repo contains:
  - Web services to provide the underlying functionality
    - Web service scripts 
    - a SUID wrapper for those scripts that need it
-   - lighttpd configuration
-   - a systemd unit to provide said web services
-   - a SUID wrapper to turn the unit on and off
 
- - A wrapper script that starts and stops the web service
-
-## lighttpd Integration
-
-A lighttpd config file called "steamos-repair.conf" wil be generated
-and installed in /etc/lighttpd/.
-
-A systemd service (steamos-reset.service) is provided which runs the
-web service on port 8080 on the loopback interface.
+These scripts are now solely used from the CLI interface.
 
 ## Build dependencies
 
@@ -180,18 +169,10 @@ For everything:
   
 ## Install dependencies
 
-  * lighttpd
   * coreutils
   * bash
   * steamos-bootconf
 
-## Transport details
-
-  * Services:
-    * will be accessible over HTTP 
-    * will be avilable at address 127.0.0.1 (ie on the loopback interface)
-    * will be available on port 8080
-    * will respond with application/json payloads
 
 ### Debugging
 
@@ -209,9 +190,6 @@ tree:
     sudo ./os-status
     ./status
     ./status uuid=deadbeef-abad-1dea-1337-d155a715f1ed
-
-NOTE: lighttpd runs with an isolated /tmp, so you can't share results/sessions
-between the web service and debug sessions run from a terminal.
 
 NOTE: When run from a terminal, stderr isn't redirected, so you'll see
 any stderr output.

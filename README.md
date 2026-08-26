@@ -12,17 +12,6 @@ Building and installing:
     make
     sudo make install
     ```
-By default the qml UI is built. You can choose either or both UIs:
-
-    ```
-    ./configure --prefix=/usr --libexecdir=/usr/lib --sbindir=/usr/bin \
-        --with-ui=cef
-    ```
-    ```
-    ./configure --prefix=/usr --libexecdir=/usr/lib --sbindir=/usr/bin \
-        --with-ui=all
-    ```
-
 Adding to your desktop:
 
    ```
@@ -177,8 +166,6 @@ This repo contains:
    - a systemd unit to provide said web services
    - a SUID wrapper to turn the unit on and off
 
- - A CEF UI to present the factory reset functionality to the user
- - A QML UI for the same
  - A wrapper script that starts and stops the web service
  - .desktop files to launch the two UIs using the wrapper script
 
@@ -199,14 +186,6 @@ For everything:
   * gcc
   * make
   
-For the CEF ui:
-
-  * cmake
-
-For the QML ui
-
-  * qt5
-
 ## Install dependencies
 
   * lighttpd

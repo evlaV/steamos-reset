@@ -36,24 +36,16 @@ noinst_PROGRAMS    = $(WRAPPER) $(SRVCTL)
 pkglibexec_SCRIPTS = $(BACKENDS) $(SH_LIBS)
 bin_SCRIPTS = $(ifneq ,$(DESKTOPS),holo-reset)
 
- ifneq (,$(filter qml all,$(UI)))
- include qml.mk
- endif
-
- ifneq (,$(filter cef all,$(UI)))
- include cef.mk
- endif
-
 DESKTOPS = $(foreach v,$(VARIANTS),holo-factory-reset.$(v).desktop)
 CLEANFILES += $(DESKTOPS)
 
 .PHONY: install clean debug-build
 
-all: $(BUILT) $(CEF_BIN) $(QML_BIN) $(DESKTOPS)
-binaries: $(BUILT) $(CEF_BIN) $(QML_BIN) $(DESKTOPS)
+all: $(BUILT) $(DESKTOPS)
+binaries: $(BUILT) $(DESKTOPS)
 
 debug-build:
-	@echo built: $(BUILT) $(CEF_BIN) $(QML_BIN)
+	@echo built: $(BUILT)
 	@echo ui: $(VARIANTS)
 	@echo .desktop: $(DESKTOPS)
 
@@ -70,8 +62,6 @@ install-data-hook: all
 	install -m 0644 -T $(LIGHTTPD) $(DESTDIR)$(LIGHTTPCFG)
 	install -d $(DESTDIR)$(UNITDIR)
 	install -m 0644 -T $(SERVICE) $(DESTDIR)$(UNITDIR)/$(notdir $(SERVICE))
-	install -d $(DESTDIR)$(PKGSHAREDIR)
-	install -m 0644 -t $(DESTDIR)$(PKGSHAREDIR) data/holo-reset.svg
 	install -d $(DESTDIR)$(PKGDATADIR)/applications
 	if [ -n "$(DESKTOPS)" ]; then \
 	  install -m 0644 -t $(DESTDIR)$(PKGDATADIR)/applications $(DESKTOPS); \
@@ -92,7 +82,6 @@ uninstall-hook:
 	rm -vf $(DESTDIR)$(CGI_BINDIR)/$(notdir $(WRAPPER))
 	(for d in $(DESKTOPS); \
 	 do rm -vf $(DESTDIR)$(PKGDATADIR)/applications/$$d; done)
-	rm -vf $(DESTDIR)$(PKGSHAREDIR)/holo-reset.svg
 	rm -vf $(DESTDIR)$(sbindir)/$(notdir $(SRVCTL))
 	rm -vf $(DESTDIR)$(sbindir)/$(notdir $(CLI))
 	(for s in $(BACKENDS); do rm -vf $(DESTDIR)$(CGI_BINDIR)/$$s; done)

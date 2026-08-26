@@ -11,14 +11,8 @@ lighttpd/*.conf
 holo-reset-wrapper
 holo-reset.sh
 .deps
-qml/*.qrc
-qml/Makefile
-qml/qrc_qmake_resources.cpp
 *~
-qml/.qmake.stash
-cef/build/
 *.sha1.ok
-cef/third_party/cef/*.tar.bz2
 .dirstamp
 holo-reset-service
 holo-reset-tool

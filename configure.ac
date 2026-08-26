@@ -38,17 +38,6 @@ AC_ARG_WITH([service-group],
             [SRVGROUP="$SRVUSER"])
 AC_SUBST([SRVGROUP])
 
-AC_ARG_WITH([ui],
-            [AS_HELP_STRING([--with-ui=<all,qml,cef,cli>],[UI to build [cli]])],
-            [UI="$with_ui"],
-            [UI="cli"])
-AC_SUBST([UI])
-
-dnl Only need X11 if we're building CEF or QML front ends
-AS_CASE([$UI],
-        [cli],[true],
-        [PKG_CHECK_MODULES([X11],[x11])])
-
 AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_CXX

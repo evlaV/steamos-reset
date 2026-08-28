@@ -141,13 +141,6 @@ Show the status of all sessions, or just of the specified session
 
 Remove all completed sessions (status 200 or no longer have a running process)
 
-  ```
-  steamos-reset-tool debug
-  ```
-
-Dump some plaintext debug info about the environment in which the reset backends
-run. This is the only non-JSON producing command.
-
 ## Contents
 
 This repo contains:

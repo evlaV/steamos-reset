@@ -209,7 +209,7 @@ EOF
 declare -r verb=${1:-boot-status}; shift || true
 
 case $verb in
-    debug|status)
+    status)
         ${EXECDIR}/$verb "$@" | jq
         ;;
     cleanup)

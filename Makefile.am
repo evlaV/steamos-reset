@@ -9,7 +9,7 @@ PKGSHAREDIR:= ${prefix}/share/$(PACKAGE_NAME)
 # but var is special on Holo:
 CGI_BINDIR := $(PKGSHAREDIR)/cgi
 
-BACKENDS   := debug status os-status boot-status factory-reset undo-reset clear
+BACKENDS   := status os-status boot-status factory-reset undo-reset clear
 SH_LIBS    := holo-reset.sh
 WRAPPER    := holo-reset-wrapper
 CLI        := holo-reset-tool

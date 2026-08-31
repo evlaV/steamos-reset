@@ -12,6 +12,17 @@ declare LAST_MESSAGE=
 declare LAST_STATUS=
 declare LAST_UUID=
 
+usage ()
+{
+    echo "Usage: $0 <mode>"
+    echo ""
+    echo "Modes:"
+    echo "    cleanup        [uuid=<uuid>]"
+    echo "    factory-reset  [scanuuid=<uuid>] [--reset-os] [--reset-user-data] [--reset-all]"
+    echo "    help"
+    echo "    os-status      [uuid=<uuid>]"
+}
+
 wait_for_session ()
 {
     local uuid=$1
@@ -206,7 +217,7 @@ EOF
     execute_backend factory-reset scanuuid="$uuid" $reset_os_args $reset_user_data_args
 }
 
-declare -r verb=${1:-boot-status}; shift || true
+declare -r verb=${1:-help}; shift || true
 
 case $verb in
     status)
@@ -224,6 +235,9 @@ case $verb in
     factory-reset)
         factory_reset "$@"
         ;;
+    help)
+	usage
+	;;
     *)
         echo "$0: Unrecognised action \"$verb\""
         exit 1

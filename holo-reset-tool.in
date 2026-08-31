@@ -124,28 +124,6 @@ execute_backend ()
     fi
 }
 
-get_cached_os_status_uuid ()
-{
-    local id x
-    # check for a cached successful result
-    read id x < <(${EXECDIR}/status | \
-                  jq -rc '.status_list|to_entries[]|select(.value[0]==200 and .value[1]=="os-status")|.key')
-
-    echo "$id"
-}
-
-get_cache_os_status ()
-{
-    local uuid=$(get_cached_os_status_uuid)
-    
-    if [ -z "$uuid" ] || [ "$uuid" = null ]
-    then
-        execute_backend os-status
-    else
-        ${EXECDIR}/os-status uuid="$uuid" | jq
-    fi
-}
-
 completed_sessions ()
 {
     ${EXECDIR}/status | \
@@ -205,7 +183,6 @@ case $verb in
         (echo "["; delete_completed_sessions; echo "]") | jq
         ;;
     os-status)
-        get_cache_os_status
         ;;
     factory-reset)
         factory_reset "$@"

@@ -220,17 +220,11 @@ EOF
 declare -r verb=${1:-help}; shift || true
 
 case $verb in
-    status)
-        ${EXECDIR}/$verb "$@" | jq
-        ;;
     cleanup)
         (echo "["; delete_completed_sessions; echo "]") | jq
         ;;
     os-status)
         get_cache_os_status
-        ;;
-    boot-status)
-        execute_backend $verb "$@"
         ;;
     factory-reset)
         factory_reset "$@"

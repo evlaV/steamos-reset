@@ -74,23 +74,55 @@ fi
 
 atomic_update ()
 {
-    local x;
-    local url="${1:-}"
     local -r flag=/run/.skip-os-reset
 
     if [ -f $flag ]
     then
         echo "Skipping actual atomic update, in test mode ($flag)" >&2
-        echo "# steamos-atomupd-client --update-from-url \"${url:-}\"" >&2
+        echo "# atomupd-manager update" >&2
         for x in $(seq -f %02.0f 0 20 100);
         do
             sleep 1
             echo "${x}%" >&2
         done
         steamos-bootconf set-mode reboot-other
-    else
-        steamos-atomupd-client --update-from-url "${url:-}"        
+        return 0
     fi
+
+    if ! atomupd-manager switch-branch stable
+    then
+        log_msg "Failed to switch to the stable branch"
+        return 1
+    fi
+
+    # This is similar to what the legacy steamos-update bash script does
+    check=$(atomupd-manager check)
+    if [[ $? != 0 ]]; then
+        log_msg "Failed to check for updates"
+        return 1
+    fi
+    if [[ "$check" = "No update available" ]]; then
+        check=$(atomupd-manager check --penultimate-update)
+        if [[ $? != 0 ]]; then
+            log_msg "Failed to check for updates"
+            return 1
+        fi
+    fi
+
+    # Extract the buildid from the output
+    id_line=${check#*ID: }
+    buildid=${id_line/ */}
+
+    atomupd-manager update "$buildid" |
+        while IFS= read -r -d $'\r' logtxt || [[ -n "$logtxt" ]]
+        do
+            case $logtxt in
+                ""|$'\033[K') ;;
+                *) printf '%s\n' "$logtxt"; ;;
+            esac
+        done
+
+    return "${PIPESTATUS[0]}"
 }
 
 generate_factory_reset_config ()
@@ -118,7 +150,7 @@ generate_factory_reset_config ()
     return $rv
 }
 
-update_from_url ()
+update_os ()
 {
     local -r tmpd=$(mktemp -d)
     local logtxt
@@ -141,7 +173,7 @@ update_from_url ()
                 (+([0-9.])%*) log_msg "New OS image: ${logtxt%\%*}%"; ;;
                 *) log_msg "$logtxt"; ;;
             esac
-        done < <(atomic_update "${url:-}" 2>&1 && touch .ok)
+        done < <(atomic_update 2>&1 && touch .ok)
 
         if [ -e .ok ]
         then
@@ -188,16 +220,15 @@ check_boot_status ()
 reset_os ()
 {
     local -i update=${1:-0}
-    local url=${2:-}
-    local report_success=${3:-yes}
+    local report_success=${2:-yes}
     local cfg
     
     if [ $update -eq 0 ]
     then
         log_msg "OS image unmodified - update not required"
     else
-        log_msg "Updating OS image from ${url:-}"
-        if ! update_from_url "${url:-}"
+        log_msg "Updating OS image"
+        if ! update_os
         then
             steamos-bootconf set-mode reboot
             set_session_status 500
@@ -241,10 +272,8 @@ log_msg "Factory-Reset $@ started at $(date +%Y-%m-%d\ %H:%M:%S\ %z)"
 
 if [ $SCANUUID = none ]
 then
-    declare -r atom_url=file:///dev/null
     declare -ir need_update=0
 else
-    declare -r atom_url=$(get_data update-target txt $SCANUUID)
     declare -ir need_update=$(get_data update-needed txt $SCANUUID)
 fi
 
@@ -256,13 +285,13 @@ set_session_status 102
 case $RESET_OS$RESET_USER in
     11)
         (close_stdio; register_session_pid;
-         reset_os ${need_update:-0} ${atom_url:-} "dont_report_success"; reset_user_data) &
+         reset_os ${need_update:-0} "dont_report_success"; reset_user_data) &
         ;;
     01)
         (close_stdio; register_session_pid; reset_user_data) &
         ;;
     10)
-        (close_stdio; register_session_pid; reset_os ${need_update:-0} ${atom_url:-}) &
+        (close_stdio; register_session_pid; reset_os ${need_update:-0}) &
         ;;
 esac
 

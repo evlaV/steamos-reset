@@ -31,31 +31,6 @@ The CLI tool emits log lines to standard error and a JSON result
 on stdout on completion of the requested operation.
 
   ```
-  steamos-reset-tool os-status
-  ```
-
-  ```
-  {
-    "service": "os-status",
-    "version": "0.02",
-    "status": 200,
-    "message": "OS Status Check Complete",
-    "uuid": "7141edd8-59ee-482a-99a6-0c6093b31fdc",
-    "update": {
-      "needed": 1,
-      "url": "https://steamdeck-images.…/…/steamdeck-20221221.2-snapshot.raucb"
-    }
-  }
-  ```
-
-The os-status command fetches a reset OS image candidate URL and caches it.
-It also determines whether an OS reset is needed based on the RAUC caibx file
-in the current image (if there is one).
-
-Subsequent invocations will not re-fetch the metadata and choose a new candidate
-until a reboot happens or the ```cleanup``` command is run.
-
-  ```
   steamos-reset-tool factory-reset
   ```
 

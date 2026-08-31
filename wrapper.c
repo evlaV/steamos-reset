@@ -26,7 +26,6 @@ bool needs_privilege ()
       ( strcmp( program_invocation_short_name, "os-status"     ) == 0 ||
         strcmp( program_invocation_short_name, "boot-status"   ) == 0 ||
         strcmp( program_invocation_short_name, "clear"         ) == 0 ||
-        strcmp( program_invocation_short_name, "undo-reset"    ) == 0 ||
         strcmp( program_invocation_short_name, "factory-reset" ) == 0 );
 }
 

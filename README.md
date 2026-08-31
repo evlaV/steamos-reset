@@ -110,21 +110,6 @@ until a reboot happens or the ```cleanup``` command is run.
 The factory-reset command fetches the cached OS image URL and installs it
 into the slot that's not currently booted. It then shows you the boot-status.
 
-  ```
-  steamos-reset-tool undo-reset
-  ```
-
-  ```
-  {
-    "service": "undo-reset",
-    "uuid": "b4932abf-8532-4a21-9d6f-b58f20acfac8",
-    "status": 200,
-    "message": "Removing factory-reset configuration"
-  }
-  ```
-
-The undo-reset command removes any scheduled filesystem reset operations.
-
 In addition the following commands are also available, but not needed in normal
 reset workflow:
 
@@ -376,21 +361,6 @@ sample output:
    "version": "0.02",
    "status": 102,
    "message": "Factory reset started",
-   "uuid":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"} 
-```
-
-### /undo-reset
-
-Starts a long-running session that deconfigures any factory reset actions
-and sets the boot image back to the current image.
-
-sample output:
-
-```
-  {"service": "undo-reset",
-   "version": "0.02",
-   "status": 102,
-   "message": "Undo factory reset started",
    "uuid":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"} 
 ```
 

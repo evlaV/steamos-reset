@@ -60,34 +60,10 @@ wait_for_session ()
     fi
 }
 
-session_status ()
-{
-    local uuid=${1:-}
-    local JSON
-    local service status msg
-
-    if [ -z "$uuid" ] || [ "$uuid" = null ]
-    then
-        return 1
-    fi
-
-    JSON=$(${EXECDIR}/status uuid="$uuid")
-    read status  < <(echo "$JSON" | jq -rc ".status_list[\"$uuid\"][0]")
-    read service < <(echo "$JSON" | jq -rc ".status_list[\"$uuid\"][1]")
-    read msg     < <(echo "$JSON" | jq -rc ".log_messages[-1]")
-   msg=${msg//\"/\\\"}
-   cat - <<EOF | jq
-{"service": "$service",
- "uuid": "$uuid",
- "status": $status,
- "message": "$msg" }
-EOF
-}
-
 execute_backend ()
 {
     local -r backend=$1; shift
-    local -r JSON=$(${EXECDIR}/$backend "$@")
+    local JSON=$(${EXECDIR}/$backend "$@")
     local -i rv=0
 
     LAST_MESSAGE=
@@ -106,19 +82,18 @@ execute_backend ()
             rv=1
         fi
 
-        # os-status and factory reset have specific output
-        # formats when finished, other long running sessions
-        # get a generic response:
-        case $backend in
-            os-status)     ${EXECDIR}/os-status uuid="$uuid" | jq; ;;
-            factory-reset) ${EXECDIR}/boot-status | jq; ;;
-            *) session_status "$uuid"; ;;
-        esac
+        JSON=$(${EXECDIR}/status uuid="$uuid")
+        read status  < <(echo "$JSON" | jq -rc ".status_list[\"$uuid\"][0]")
+        read msg     < <(echo "$JSON" | jq -rc ".log_messages[-1]")
+        msg=${msg//\"/\\\"}
+
+	LAST_MESSAGE=$msg
+	LAST_STATUS=$status
+	LAST_UUID=$uuid
 
         return $rv;            
     else
         LAST_STATUS=$status
-        echo "$JSON" | jq
         if [ $status -ne 200 ]; then return 1; fi
         return 0
     fi
@@ -133,17 +108,19 @@ completed_sessions ()
 delete_completed_sessions ()
 {
     local uuid x
-    local n=0
+    local retval=0
+
     while read uuid x
     do
-        if [ $n -gt 0 ]
-        then
-            echo -n ","
-        else
-            n=1
-        fi
-        ${EXECDIR}/clear uuid="$uuid"
+	status=$(${EXECDIR}/clear uuid="$uuid" | jq -rc '"\(.status)"')
+        if [ $status -ne 200 ]
+	then
+	    echo "Failed to clear $uuid"
+	    retval=1
+	fi
     done < <(completed_sessions)
+
+    return $retval
 }
 
 factory_reset ()
@@ -166,7 +143,9 @@ factory_reset ()
     if [ -n "$reset_os_args" ]
     then
         rc=0
-        uuid=$(execute_backend os-status | jq -rc .uuid) || rc=$?
+        execute_backend os-status || rc=$?
+        uuid=$LAST_UUID
+
         if [ "$rc" != "0" ] || [ -z "$uuid" ] || [ "$uuid" = null ]
         then
             echo "No factory reset settings found: $LAST_MESSAGE" >&2
@@ -185,7 +164,7 @@ declare -r verb=${1:-help}; shift || true
 
 case $verb in
     cleanup)
-        (echo "["; delete_completed_sessions; echo "]") | jq
+        delete_completed_sessions
         ;;
     os-status)
         # This can't be removed as steam client expects this to exist and calls it.

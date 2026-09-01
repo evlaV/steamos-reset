@@ -165,15 +165,20 @@ factory_reset ()
     # The OS state doesn't matter if we're only scrubbing user data from /home
     if [ -n "$reset_os_args" ]
     then
-        uuid=$(execute_backend os-status | jq -rc .uuid)
-        if [ -z "$uuid" ] || [ "$uuid" = null ]
+        rc=0
+        uuid=$(execute_backend os-status | jq -rc .uuid) || rc=$?
+        if [ "$rc" != "0" ] || [ -z "$uuid" ] || [ "$uuid" = null ]
         then
-            echo "No factory reset settings found" >&2
+            echo "No factory reset settings found: $LAST_MESSAGE" >&2
             exit 1
         fi
     fi
 
-    execute_backend factory-reset scanuuid="$uuid" $reset_os_args $reset_user_data_args
+    if ! execute_backend factory-reset scanuuid="$uuid" $reset_os_args $reset_user_data_args
+    then
+        echo "Error: $LAST_MESSAGE" >&2
+        exit 1
+    fi
 }
 
 declare -r verb=${1:-help}; shift || true

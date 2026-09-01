@@ -166,14 +166,18 @@ factory_reset ()
     if [ -n "$reset_os_args" ]
     then
         uuid=$(execute_backend os-status | jq -rc .uuid)
-        if [ -z "$uuid" ] || [ "$uuid" = null ]
+        if [ "$?" = "1" ] || [ -z "$uuid" ] || [ "$uuid" = null ]
         then
-            echo "No factory reset settings found" >&2
+            echo "No factory reset settings found: $LAST_MESSAGE" >&2
             exit 1
         fi
     fi
 
     execute_backend factory-reset scanuuid="$uuid" $reset_os_args $reset_user_data_args
+    if [ "$?" = "1" ]
+    then
+        echo "Error: $LAST_MESSAGE" >&2
+    fi
 }
 
 declare -r verb=${1:-help}; shift || true

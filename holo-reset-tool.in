@@ -18,7 +18,7 @@ usage ()
     echo ""
     echo "Modes:"
     echo "    cleanup        [uuid=<uuid>]"
-    echo "    factory-reset  [scanuuid=<uuid>] [--reset-os] [--reset-user-data] [--reset-all]"
+    echo "    factory-reset  [--reset-os] [--reset-user-data] [--reset-all]"
     echo "    help"
     echo "    os-status      [uuid=<uuid>]"
 }
@@ -170,14 +170,13 @@ delete_completed_sessions ()
 
 factory_reset ()
 {
-    local arg uuid=
+    local arg uuid=null
     local arg reset_os_args=
     local arg reset_user_data_args=
 
     for arg in "$@"
     do
         case $arg in
-            scanuuid=*) uuid="${arg#scanuuid=}"; ;;
             --reset-os) reset_os_args="--reset-os"; ;;
             --reset-user-data) reset_user_data_args="--reset-user-data"; ;;
             --reset-all) reset_os_args="--reset-all"; ;;
@@ -188,30 +187,12 @@ factory_reset ()
     # The OS state doesn't matter if we're only scrubbing user data from /home
     if [ -n "$reset_os_args" ]
     then
-        # no session UUID from user, find a cached one
+        uuid=$(execute_backend os-status | jq -rc .uuid)
         if [ -z "$uuid" ] || [ "$uuid" = null ]
         then
-            uuid=$(get_cached_os_status_uuid)
-        fi
-
-        # Nothing cached, run the os-status backend to fix this
-        # NOTE: execute_backend will wait for the async backend to finish
-        if [ -z "$uuid" ] || [ "$uuid" = null ]
-        then
-            uuid=$(execute_backend os-status | jq -rc .uuid)
-        fi
-
-        # nothing passed in, nothing cached: error
-        if [ -z "$uuid" ] || [ "$uuid" = null ]
-        then
-            cat - <<EOF
-{"status": 404,
- "message": "No factory reset settings found, run $0 os-status"}
-EOF
+            echo "No factory reset settings found" >&2
             exit 1
         fi
-    else
-        uuid=null
     fi
 
     execute_backend factory-reset scanuuid="$uuid" $reset_os_args $reset_user_data_args

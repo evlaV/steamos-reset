@@ -112,7 +112,7 @@ tree:
     ./configure --prefix=/usr --libexecdir=/usr/lib
     make
 
-    sudo ./os-status
+    sudo ./factory-reset --reset-os
     ./status
     ./status uuid=deadbeef-abad-1dea-1337-d155a715f1ed
 
@@ -143,80 +143,6 @@ In addition if the status is 100-199:
 ## Services
 
 These are avaiulable at the following URLs
-
-### /os-status?uuid=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-
-If no uuid is supplied checks the status of the install OS, including:
-
- - Whether it has been modified or needs to be re-set to a 'vanilla' state
- - Which stable release (if any) is needed to restore it to a vanilla state
-
-It is only possible to check the unmodified state if the RAUC caibx has
-been included in the image at a well-known location. If this file is
-not present os-status will proceed as if the unmodified check failed.
-
-Currently we cannot install the same image in two different slots, so the
-image picked is the most recent stable image that is _not_ the current
-image.
-
-sample output:
-
-```
-  {"service": "os-status",
-   "version": "0.02",
-   "status": 102,
-   "message": "Checking OS Update Target",
-   "uuid":"b1a8b748-c1a0-4252-90a4-05014dedb709"}
-```
-
-If a uuid is supplied and that session has completed then the results
-of that session are returned in full:
-
-sample outputs:
-
-Still ongoing:
-
-```
-  {"service": "os-status",
-   "version": "0.02",
-   "status": 102,
-   "message": "OS status check ongoing",
-   "uuid":"b1a8b748-c1a0-4252-90a4-05014dedb709"}
-```
-
-Completed, reinstall required:
-
-```
-  {"service": "os-status",
-   "version": "0.02",
-   "status": 200,
-   "message": "OS Status Check Complete",
-   "uuid":"b1a8b748-c1a0-4252-90a4-05014dedb709",
-   "update":
-   {"needed":1,
-    "url":"https://…/steamdeck/20220817.1/steamdeck-20220817.1-snapshot.raucb"}}
-```
-
-Completed, OS is unmodified:
-
-```
-  {"service": "os-status",
-   "version": "0.02",
-   "status": 200,
-   "message": "OS Status Check Complete",
-   "uuid":"b1a8b748-c1a0-4252-90a4-05014dedb709",
-   "update":{"needed":0, "url":""}}
-```
-
-Session ID is not from an os-status session:
-
-```
-  {"service": "os-status",
-   "version": "0.02",
-   "status": 400,
-   "message": "Session b1a8b748-c1a0-4252-90a4-05014dedb708 is not an os-status check",
-   "uuid":"b1a8b748-c1a0-4252-90a4-05014dedb708"}
-```
 
 ### /boot-status
 

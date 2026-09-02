@@ -20,7 +20,7 @@ usage ()
     echo "    cleanup        [uuid=<uuid>]"
     echo "    factory-reset  [--reset-os] [--reset-user-data] [--reset-all]"
     echo "    help"
-    echo "    os-status      [uuid=<uuid>]"
+    echo "    (deprecated) os-status"
 }
 
 wait_for_session ()
@@ -134,21 +134,7 @@ factory_reset ()
         esac
     done
 
-    # We only need a cached os-status if we're resetting the OS partitions(s)
-    # The OS state doesn't matter if we're only scrubbing user data from /home
-    if [ -n "$reset_os_args" ]
-    then
-        execute_backend os-status
-        uuid=$LAST_UUID
-
-        if [ "$?" = "1" ] || [ -z "$uuid" ] || [ "$uuid" = null ]
-        then
-            echo "No factory reset settings found: $LAST_MESSAGE" >&2
-            exit 1
-        fi
-    fi
-
-    execute_backend factory-reset scanuuid="$uuid" $reset_os_args $reset_user_data_args
+    execute_backend factory-reset $reset_os_args $reset_user_data_args
     if [ "$?" = "1" ]
     then
         echo "Error: $LAST_MESSAGE" >&2

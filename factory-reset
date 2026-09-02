@@ -13,19 +13,20 @@ shopt -s extglob
 
 set +e
 
-declare SCANUUID
 declare -i RESET_OS="0"
 declare -i RESET_USER="0"
 declare -i RESET_ARGUMENT_USED="0"
+
+declare -i UPDATE_PERFORMED="0"
+
+declare -r RAUC_ROOTFS_INDEX=/var/lib/steamos-atomupd/rootfs.caibx
+declare -r PARTSET_LINKDIR=/dev/disk/by-partsets
 
 parse_args ()
 {
     for arg in "$@"
     do
         case $arg in
-            scanuuid=*)
-                SCANUUID=${arg#*=}
-                ;;
             --reset-os)
                 RESET_OS="1"
                 RESET_ARGUMENT_USED="1"
@@ -51,26 +52,31 @@ parse_args ()
 
 parse_args "$@"
 
-# If we are doing an OS reset we'll need a scan uuid to get the atom update URL
-# to update the OS partitions from/with:
-if [ $RESET_OS = 1 ]
-then
-    if ! uuid_ok "${SCANUUID:-none}"
+# If RAUC_ROOTFS_INDEX is present we can check if the rootfs is vanilla:
+os_is_unmodified ()
+{
+    if [ ! -f $RAUC_ROOTFS_INDEX ]
     then
-        emit_json_response 400 "Malformed session id '${SCANUUID:-}'"
-        exit 0
+        log_msg "No index at $RAUC_ROOTFS_INDEX, cannot verify installed image"
+        return 1;
     fi
 
-    declare -r stype=$(get_data session-type txt $SCANUUID)
-
-    if [ "${stype:-none}" != os-status ]
+    if ! type -t desync >/dev/null
     then
-        emit_json_response 400 "Session $SCANUUID was not an os-status check"
-        exit 0
+        log_msg "desync not available, cannot verify installed image"
+        return 1
     fi
-else
-    SCANUUID=none
-fi
+
+    log_msg "desync verifying $RAUC_ROOTFS_INDEX vs $PARTSET_LINKDIR/self/rootfs"
+    if desync verify-index $RAUC_ROOTFS_INDEX $PARTSET_LINKDIR/self/rootfs
+    then
+        log_msg "Installed image is unmodified"
+        return 0
+    else
+        log_msg "Installed image has been modified"
+        return 1
+    fi
+}
 
 generate_factory_reset_config ()
 {
@@ -104,7 +110,7 @@ update_os ()
     if [ -f $flag ]
     then
         log_msg "Skipping actual atomic update, in test mode ($flag)"
-        log_msg "# Running atomupd-manager update stable"
+        log_msg "# atomupd-manager update"
         for x in $(seq -f %02.0f 0 20 100);
         do
             sleep 1
@@ -114,23 +120,72 @@ update_os ()
         return 0
     fi
 
-    atomupd-manager custom-update --verbose stable | while IFS= read -r line; do
+    # Ensure we are on the stable branch, we always want to do a factory reset
+    # to this. If we are already on this branch, this isn't going to hurt.
+    if ! atomupd-manager switch-branch stable
+    then
+        log_msg "Failed to swtich to the stable branch"
+        return 1
+    fi
+
+    # We will update to the latest stable release if one is available
+    check=$(atomupd-manager check)
+    if [[ $? != 0 ]]; then
+        # If we fail to find the latest, check for the penultimate just in case.
+        log_msg "Failed to check for update, fall back to penultimate update"
+        check=$(atomupd-manager check --penultimate-update)
+        if [[ $? != 0 ]]; then
+            log_msg "Failed to check for penultimate update"
+            return 1
+        fi
+    fi
+
+    if [[ "$check" = "No update available" ]]; then
+        # We need to install the current version, but only if the current OS is modified.
+        if os_is_unmodified
+        then
+            log_msg "OS image up-to-date and unmodified - update not required"
+            return 0
+        else
+            log_msg "Existing build modified, needs reinstall"
+            if ! check=$(atomupd-manager list-builds --branch stable | tail -n 1)
+            then
+                log_msg "Failed to list latest stable release"
+                return 1
+            fi
+
+        fi
+    fi
+
+    # Extract the buildid from the output
+    id_line=${check#*ID: }
+    buildid=${id_line/ */}
+
+    atomupd-manager custom-update "$buildid" --verbose | while IFS= read -r line; do
         if [[ "$line" =~ ^[0-9]+\.[0-9]+% ]]; then
             log_msg "New OS image: $line"
         else
             log_msg "$line"
         fi
     done
-    return ${PIPESTATUS[0]}
+
+    ret=${PIPESTATUS[0]}
+    if [ $ret != 0 ]
+    then
+        return 1
+    fi
+
+    UPDATE_PERFORMED=1
+
+    return 0
 }
 
 check_boot_status ()
 {
-    local -i update=${1:-0}
     local -r current=$(holo-bootconf this-image)
     local -r selected=$(holo-bootconf selected-image)
 
-    if [ $update -eq 1 ]
+    if [ $UPDATE_PERFORMED -eq 1 ]
     then
         if [ -z "${current:-}"  ] ||
            [ -z "${selected:-}" ] ||
@@ -158,24 +213,24 @@ check_boot_status ()
 
 reset_os ()
 {
-    local -i update=${1:-0}
-    local report_success=${2:-yes}
+    local report_success=${1:-yes}
     local cfg
-    
-    if [ $update -eq 0 ]
+
+    # Update the OS if it's required
+    if ! update_os
     then
-        log_msg "OS image unmodified - update not required"
-    else
-        log_msg "Updating OS image"
-        if ! update_os
-        then
-            holo-bootconf set-mode reboot
-            set_session_status 500
-            return 0
-        fi
+        set_session_status 500
+        return 1
     fi
 
-    if check_boot_status ${update}
+    if [ $UPDATE_PERFORMED = 0 ]
+    then
+        holo-bootconf set-mode reboot
+        set_session_status 500
+        return 0
+    fi
+
+    if check_boot_status
     then
         log_msg "Boot config OK, preparing to reset user data"
     else
@@ -207,13 +262,6 @@ reset_user_data ()
 
 log_msg "Factory-Reset $@ started at $(date +%Y-%m-%d\ %H:%M:%S\ %z)"
 
-if [ $SCANUUID = none ]
-then
-    declare -ir need_update=0
-else
-    declare -ir need_update=$(get_data update-needed txt $SCANUUID)
-fi
-
 set_uuid
 setup_session_dirs
 set_session_type factory-reset
@@ -222,13 +270,13 @@ set_session_status 102
 case $RESET_OS$RESET_USER in
     11)
         (close_stdio; register_session_pid;
-         reset_os ${need_update:-0} "dont_report_success"; reset_user_data) &
+         reset_os "dont_report_success"; reset_user_data) &
         ;;
     01)
         (close_stdio; register_session_pid; reset_user_data) &
         ;;
     10)
-        (close_stdio; register_session_pid; reset_os ${need_update:-0}) &
+        (close_stdio; register_session_pid; reset_os ) &
         ;;
 esac
 

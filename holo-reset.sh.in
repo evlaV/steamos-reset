@@ -91,6 +91,24 @@ log_msg ()
     chmod 0644 "$file"
 }
 
+get_log_count ()
+{
+    local -r uuid=${1:-${UUID}}
+    local count
+
+    uuid_ok $uuid || return 1
+
+    count=$(cd ${OS_REPAIR_LOGS}/${uuid} && ls -1 *.log 2>/dev/null | grep -v error.log | wc -l)
+    if [ $? != 0 ]
+    then
+        return 1
+    fi
+
+    echo $count
+
+    return 0
+}
+
 get_log_messages ()
 {
     local -i first=${1:-0}

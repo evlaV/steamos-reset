@@ -40,10 +40,10 @@ wait_for_session ()
         then
             JSON=$(${EXECDIR}/status uuid="$uuid" start=$log_idx)
             status=$(echo "$JSON" | jq -rc ".status_list[\"$uuid\"][0]")
+            log_idx=$(echo "$JSON" | jq -rc ".status_list[\"$uuid\"][2]")
             while read msg
             do
                 echo "$msg" >&2
-                log_idx=$((log_idx + 1))
                 LAST_MESSAGE="$msg"
             done < <(echo "$JSON" | jq -rc ".log_messages[]")
         fi

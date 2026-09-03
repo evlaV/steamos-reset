@@ -17,7 +17,6 @@ usage ()
     echo "Usage: $0 <mode>"
     echo ""
     echo "Modes:"
-    echo "    cleanup        [uuid=<uuid>]"
     echo "    factory-reset  [--reset-os] [--reset-user-data] [--reset-all]"
     echo "    help"
     echo "    (deprecated) os-status"
@@ -134,6 +133,8 @@ factory_reset ()
         esac
     done
 
+    trap delete_completed_sessions EXIT
+
     execute_backend factory-reset $reset_os_args $reset_user_data_args
     if [ "$?" = "1" ]
     then
@@ -144,9 +145,6 @@ factory_reset ()
 declare -r verb=${1:-help}; shift || true
 
 case $verb in
-    cleanup)
-        delete_completed_sessions
-        ;;
     os-status)
         ;;
     factory-reset)

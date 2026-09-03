@@ -64,15 +64,6 @@ on stdout on completion of the requested operation.
 The factory-reset command fetches the cached OS image URL and installs it
 into the slot that's not currently booted. It then shows you the boot-status.
 
-In addition the following commands are also available, but not needed in normal
-reset workflow:
-
-  ```
-  steamos-reset-tool cleanup
-  ```
-
-Remove all completed sessions (status 200 or no longer have a running process)
-
 ## Contents
 
 This repo contains:

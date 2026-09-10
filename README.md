@@ -176,16 +176,12 @@ After an OS reinstall, when a reset has been configured:
 Returns the current status of all long running sessions:
 
 ```
-  {"status": 200,
-   "version": "0.02",
-   "message": "OS Reset Session ",
-   "status_list":
-   {"1e774b3c-df64-4dcb-b01c-5c256119780b":
-     [200, "factory-reset", "Factory reset ready", 0],
-    "eae4a572-9535-4a0c-bb4c-08f9746a14db":
-     [200, "os-status", "Selecting 20220817.1 (steamdeck)", 0],
-    "ff02e764-650b-4f27-9f73-c8c1f2208709":
-     [102, "os-status", "Searching for 'steamdeck' image which is not 20221005.1", 173236]}}
+{"status": 200,
+ "version": "0.03",
+ "message": "OS Reset Session ",
+ "status_list":
+{"66d11140-32b3-4688-8d5d-fda9466a124e": [200, "factory-reset", "Update completed", 0, 15]
+}}
 ```
 
 #### /status?uuid=`UUID`;start=10;max=3
@@ -195,14 +191,16 @@ If `start` is specified, starts at that log message number.
 If `max` is specified, returns no more than that many messages.
 
 ```
-  {"status": 200,
-   "version": "0.02",
-   "message": "OS Reset Session ff02e764-650b-4f27-9f73-c8c1f2208709",
-   "uuid": "ff02e764-650b-4f27-9f73-c8c1f2208709",
-   "status_list": {"ff02e764-650b-4f27-9f73-c8c1f2208709": [200, "os-status", "Selecting 20220817.1 (steamdeck)", 0]},
-   "log_messages":["20221118.1000 is a steamdeck-main image",
-                   "20221118.100 is a steamdeck-bc image",
-                   "20221116.1000 is a steamdeck-main image"]}
+{"status": 200,
+ "version": "0.03",
+ "message": "OS Reset Session 66d11140-32b3-4688-8d5d-fda9466a124e",
+ "uuid": "66d11140-32b3-4688-8d5d-fda9466a124e",
+ "status_list": {"66d11140-32b3-4688-8d5d-fda9466a124e": [200, "factory-reset", "Update completed", 0, 15]},
+ "log_messages":[
+ "New OS image: 80.16%"
+,"New OS image: 95.09%"
+,"New OS image: 100.00%"
+]}
 ```
 
 ### /factory-reset

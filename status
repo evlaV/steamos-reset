@@ -62,6 +62,7 @@ then
     status=$(get_session_status)
     stype=$(quote_escape "$(get_session_type)")
     count=$(get_log_count)
+    lastmsg=$(quote_escape "$(get_log_messages $((count -1)) 1)")
     session_pid=$(get_session_pid)
 
     if [ $msg_count -gt 0 ] && [ $count -gt $((from + msg_count)) ]
@@ -75,7 +76,7 @@ then
  "version": "$VERSION",
  "message": "OS Reset Session $known_sid",
  "uuid": "$UUID",
- "status_list": {"$sid": [$status, "$stype", "$count", $session_pid]},
+ "status_list": {"$sid": [$status, "$stype", "$lastmsg", $session_pid, $count]},
  "log_messages":[
 EOF
     num=$((count - from))
@@ -107,9 +108,10 @@ do
     uuid_ok "$sid" || continue
     status=$(quote_escape "$(get_session_status $sid)")
     stype=$(quote_escape "$(get_session_type $sid)")
-    message=$(quote_escape "$(get_log_messages -1 1 $sid)")
+    count=$(get_log_count $sid)
+    message=$(quote_escape "$(get_log_messages $((count - 1)) 1 $sid)")
     session_pid=$(get_session_pid $sid)
-    echo $comma\"$sid\": "[$status, \"$stype\", \"$message\", $session_pid]"
+    echo $comma\"$sid\": "[$status, \"$stype\", \"$message\", $session_pid, $count]"
     empty=
     comma=,
 done < <(list_sessions)

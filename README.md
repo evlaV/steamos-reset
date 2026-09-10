@@ -27,42 +27,41 @@ happened, but no new OS image will be fetched or installed.
 
 ### Runnning the CLI tool:
 
-The CLI tool emits log lines to standard error and a JSON result
-on stdout on completion of the requested operation.
+The CLI tool emits log lines to stdout.
 
   ```
   steamos-reset-tool factory-reset
   ```
 
   ```
-  {
-    "service": "boot-status",
-    "version": "0.02",
-    "status": 200,
-    "message": "Boot Status",
-    "boot": {
-      "current": "A",
-      "next": "B",
-      "reset-list": [
-        {
-          "device": "/dev/nvme0n1p8",
-          "label": "User-data (shared)"
-        },
-        {
-          "device": "/dev/nvme0n1p6",
-          "label": "OS-data (A)"
-        },
-        {
-          "device": "/dev/nvme0n1p7",
-          "label": "OS-data (B)"
-        }
-      ]
-    }
-  }
+  Factory-Reset started at 2026-09-10 16:21:04 +0100
+  ID: 20260716.1 - version: 3.8.16 - branch: stable - variant: steamdeck
+  New OS image: 0.00%
+  atomupd-manager[D]: Debug output enabled
+  atomupd-manager[D]: DEBUG:client.py:740: Parsing config from file: /etc/steamos-atomupd/client.conf
+  atomupd-manager[D]: DEBUG:client.py:545: The attempts log is missing, assuming no previous failed update attempts
+  atomupd-manager[D]: DEBUG:client.py:605: The active slot seed index is located in: /var/lib/steamos-atomupd/rootfs.caibx
+  atomupd-manager[D]: DEBUG:client.py:777: Installing an update from the given URL
+  atomupd-manager[D]: DEBUG:client.py:510: Getting the rootfs device by parsing the RAUC status
+  atomupd-manager[D]: DEBUG:client.py:368: Remounting /tmp with max memory and inodes number
+  atomupd-manager[D]: DEBUG:client.py:386: Installing the bundle
+  New OS image: 2.08%
+  New OS image: 5.00%
+  New OS image: 11.11% 06s
+  New OS image: 23.97% 03s
+  New OS image: 37.28% 01s
+  New OS image: 50.29% 01s
+  New OS image: 65.46% 00s
+  New OS image: 77.45%
+  New OS image: 82.13%
+  New OS image: 96.16%
+  New OS image: 100.00%
+
+  Update completed
   ```
 
 The factory-reset command fetches the cached OS image URL and installs it
-into the slot that's not currently booted. It then shows you the boot-status.
+into the slot that's not currently booted.
 
 ## Contents
 
@@ -133,7 +132,7 @@ In addition if the status is 100-199:
 
 ## Services
 
-These are avaiulable at the following URLs
+These are available at the following URLs
 
 ### /boot-status
 
@@ -147,7 +146,7 @@ Normal boot status (if image B is the primary):
 
 ```
   {"service": "boot-status",
-   "version": "0.02",
+   "version": "0.03",
    "status": 200,
    "message": "Boot Status",
    "boot":
@@ -160,7 +159,7 @@ After an OS reinstall, when a reset has been configured:
 
 ```
 "service": "boot-status",
- "version": "0.02",
+ "version": "0.03",
  "status": 200,
  "message": "Boot Status",
  "boot":
@@ -219,7 +218,7 @@ sample output:
 
 ```
   {"service": "factory-reset",
-   "version": "0.02",
+   "version": "0.03",
    "status": 102,
    "message": "Factory reset started",
    "uuid":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}

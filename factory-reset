@@ -114,6 +114,14 @@ update_os ()
         return 0
     fi
 
+    # Ensure we are on the stable branch, we always want to do a factory reset
+    # to this. If we are already on this branch, this isn't going to hurt.
+    if ! atomupd-manager switch-branch stable
+    then
+        log_msg "Failed to switch to the stable branch"
+        return 1
+    fi
+
     atomupd-manager custom-update --verbose stable | while IFS= read -r line; do
         if [[ "$line" =~ ^[0-9]+\.[0-9]+% ]]; then
             log_msg "New OS image: $line"

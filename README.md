@@ -288,14 +288,13 @@ If `max` is specified, returns no more than that many messages.
                    "20221116.1000 is a steamdeck-main image"]}
 ```
 
-### /factory-reset?scanuuid=`UUID`
+### /factory-reset
 
-Starts a long-running factory reset session in the background, based on the
-previously completed os-status session `UUID`.
+Starts a long-running factory reset session in the background.
 
 This will:
-  - Install a fresh OS image selected by the os-status session (if necessary
-    - Select the other image for next boot if it was reset.
+  - Install a fresh OS image
+    - Select the other image for next boot if it was reset
   - Configure the initrd to reset:
     - /var for image A
     - /var for image B
@@ -308,7 +307,7 @@ sample output:
    "version": "0.02",
    "status": 102,
    "message": "Factory reset started",
-   "uuid":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"} 
+   "uuid":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}
 ```
 
 ### /clear?uuid=<UUID>

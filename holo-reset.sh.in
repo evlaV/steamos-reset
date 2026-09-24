@@ -14,7 +14,6 @@ unset prefix
 declare -r OS_REPAIR_LOGS=/tmp/@PACKAGE_NAME@/logs
 declare -r OS_REPAIR_DATA=/tmp/@PACKAGE_NAME@/data
 declare -l UUID=
-declare -i LOG_NUMBER=0
 declare DATA_FD=
 declare DATA_TMPFILE=
 declare -a TRAPS=()
@@ -77,18 +76,50 @@ log_msg ()
     setup_session_dirs
 
     local logs=${OS_REPAIR_LOGS}/${UUID}
-    local file=${logs}/$(printf "%05d.log" $LOG_NUMBER)
-    local errs=${logs}/error.log
-    LOG_NUMBER=$((LOG_NUMBER + 1))
+    local counter=${logs}/counter
 
-    # NOTE: this stderr capture is initiated by close_stdio
-    # transcribe any stderr output so far:
-    if [ -s $errs ] && cat $errs | sed -re 's/[\x00-\x08]//g; s/\r/\\r/g' >> $file
+    # We need to store the log index somewhere we can increment from multiple
+    # subshells with locking. Do to the way logs are read and reported, we also
+    # want to hold onto the lock until the log file is written.
+    (
+        exec 9<>"$counter"
+        flock 9
+        index=$(cat "$counter" 2>/dev/null)
+        index=${index:-0}
+        echo $((index + 1)) > "$counter"
+
+        local file=${logs}/$(printf "%05d.log" $index)
+        local temp=${file}.tmp
+        local errs=${logs}/error.log
+
+        # NOTE: this stderr capture is initiated by close_stdio
+        # transcribe any stderr output so far:
+        if [ -s $errs ] && cat $errs | sed -re 's/[\x00-\x08]//g; s/\r/\\r/g' >> $temp
+        then
+            echo -n > "$errs"
+        fi
+        echo "$@" | sed -re 's/[\x00-\x08]//g' >> $temp
+        chmod 0644 "$temp"
+        mv "$temp" "$file"
+    )
+}
+
+get_log_count ()
+{
+    local -r uuid=${1:-${UUID}}
+    local count
+
+    uuid_ok $uuid || return 1
+
+    count=$(cd ${OS_REPAIR_LOGS}/${uuid} && ls -1 *.log 2>/dev/null | grep -v error.log | wc -l)
+    if [ $? != 0 ]
     then
-        echo -n > "$errs"
+        return 1
     fi
-    echo "$@" | sed -re 's/[\x00-\x08]//g' >> $file
-    chmod 0644 "$file"
+
+    echo $count
+
+    return 0
 }
 
 get_log_messages ()

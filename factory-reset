@@ -13,7 +13,6 @@ shopt -s extglob
 
 set +e
 
-declare SCANUUID
 declare -i RESET_OS="0"
 declare -i RESET_USER="0"
 declare -i RESET_ARGUMENT_USED="0"
@@ -23,9 +22,6 @@ parse_args ()
     for arg in "$@"
     do
         case $arg in
-            scanuuid=*)
-                SCANUUID=${arg#*=}
-                ;;
             --reset-os)
                 RESET_OS="1"
                 RESET_ARGUMENT_USED="1"
@@ -50,27 +46,6 @@ parse_args ()
 }
 
 parse_args "$@"
-
-# If we are doing an OS reset we'll need a scan uuid to get the atom update URL
-# to update the OS partitions from/with:
-if [ $RESET_OS = 1 ]
-then
-    if ! uuid_ok "${SCANUUID:-none}"
-    then
-        emit_json_response 400 "Malformed session id '${SCANUUID:-}'"
-        exit 0
-    fi
-
-    declare -r stype=$(get_data session-type txt $SCANUUID)
-
-    if [ "${stype:-none}" != os-status ]
-    then
-        emit_json_response 400 "Session $SCANUUID was not an os-status check"
-        exit 0
-    fi
-else
-    SCANUUID=none
-fi
 
 generate_factory_reset_config ()
 {
@@ -104,7 +79,7 @@ update_os ()
     if [ -f $flag ]
     then
         log_msg "Skipping actual atomic update, in test mode ($flag)"
-        log_msg "# Running atomupd-manager update stable"
+        log_msg "# atomupd-manager update"
         for x in $(seq -f %02.0f 0 20 100);
         do
             sleep 1
@@ -114,68 +89,80 @@ update_os ()
         return 0
     fi
 
+    # Ensure we are on the stable branch, we always want to do a factory reset
+    # to this. If we are already on this branch, this isn't going to hurt.
+    if ! atomupd-manager switch-branch stable
+    then
+        log_msg "Failed to switch to the stable branch"
+        return 1
+    fi
+
+    # We will update to the latest stable release if one is available
     atomupd-manager custom-update --verbose stable | while IFS= read -r line; do
-        if [[ "$line" =~ ^[0-9]+\.[0-9]+% ]]; then
+        if [[ "$line" =~ ^[0-9]+\.[0-9]+% ]]
+        then
             log_msg "New OS image: $line"
         else
             log_msg "$line"
         fi
     done
+
+    if [ ${PIPESTATUS[0]} == 0 ]
+    then
+        return 0
+    fi
+
+    # If we fail to install the latest, try falling back to the penultimate version
+    log_msg "Failed to check for update, fall back to penultimate update"
+    if ! atomupd-manager check --penultimate-update
+    then
+        log_msg "Failed to check for penultimate update"
+        return 1
+    fi
+
+    # If we've maanged to do the above check, we can now install the
+    # penultimate update without needing to parse the version
+    atomupd-manager update --verbose --penultimate-update | while IFS= read -r line; do
+        if [[ "$line" =~ ^[0-9]+\.[0-9]+% ]]
+        then
+            log_msg "New OS image: $line"
+        else
+            log_msg "$line"
+        fi
+    done
+
     return ${PIPESTATUS[0]}
 }
 
 check_boot_status ()
 {
-    local -i update=${1:-0}
     local -r current=$(holo-bootconf this-image)
     local -r selected=$(holo-bootconf selected-image)
 
-    if [ $update -eq 1 ]
+    if [ -z "${current:-}"  ] ||
+       [ -z "${selected:-}" ] ||
+       [ "$current" = "$selected" ]
     then
-        if [ -z "${current:-}"  ] ||
-           [ -z "${selected:-}" ] ||
-           [ "$current" = "$selected" ]
-        then
-            log_msg "Bad boot config: current:${current:-?}, next:${selected:-?}"
-            return 1
-        else
-            log_msg "Current image: ${current}; next boot: ${selected}"
-            return 0
-        fi
+        log_msg "Bad boot config: current:${current:-?}, next:${selected:-?}"
+        return 1
     else
-        if [ -z "${current:-}"  ] ||
-           [ -z "${selected:-}" ] ||
-           [ "$current" != "$selected" ]
-        then
-            log_msg "Bad boot config: next:${selected:-?}, should be ${current:-?}"
-            return 1
-        else
-            log_msg "Current image: ${current}; next boot: ${selected}"
-            return 0
-        fi
+        log_msg "Current image: ${current}; next boot: ${selected}"
+        return 0
     fi
 }
 
 reset_os ()
 {
-    local -i update=${1:-0}
-    local report_success=${2:-yes}
+    local report_success=${1:-yes}
     local cfg
-    
-    if [ $update -eq 0 ]
+
+    if ! update_os
     then
-        log_msg "OS image unmodified - update not required"
-    else
-        log_msg "Updating OS image"
-        if ! update_os
-        then
-            holo-bootconf set-mode reboot
-            set_session_status 500
-            return 0
-        fi
+        set_session_status 500
+        return 1
     fi
 
-    if check_boot_status ${update}
+    if check_boot_status
     then
         log_msg "Boot config OK, preparing to reset user data"
     else
@@ -207,13 +194,6 @@ reset_user_data ()
 
 log_msg "Factory-Reset $@ started at $(date +%Y-%m-%d\ %H:%M:%S\ %z)"
 
-if [ $SCANUUID = none ]
-then
-    declare -ir need_update=0
-else
-    declare -ir need_update=$(get_data update-needed txt $SCANUUID)
-fi
-
 set_uuid
 setup_session_dirs
 set_session_type factory-reset
@@ -222,13 +202,13 @@ set_session_status 102
 case $RESET_OS$RESET_USER in
     11)
         (close_stdio; register_session_pid;
-         reset_os ${need_update:-0} "dont_report_success"; reset_user_data) &
+         reset_os "dont_report_success"; reset_user_data) &
         ;;
     01)
         (close_stdio; register_session_pid; reset_user_data) &
         ;;
     10)
-        (close_stdio; register_session_pid; reset_os ${need_update:-0}) &
+        (close_stdio; register_session_pid; reset_os ) &
         ;;
 esac
 
